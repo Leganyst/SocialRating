@@ -1,0 +1,36 @@
+# Виртуальные окружения
+.env
+venv/
+env/
+.venv/
+ENV/
+
+# Скомпилированные файлы Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Настройки IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Логи и базы данных
+*.log
+*.sqlite3
+
+# Файлы тестирования и покрытия
+htmlcov/
+.tox/
+.nosetests.xml
+.coverage
+.coverage.*
+.cache
+
+# Системные файлы
+.DS_Store
+.Thumbnails
+ehthumbs.db
+Thumbs.db

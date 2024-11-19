@@ -1,39 +1,43 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from models.collective import Collective
 from schemas.collective import CollectiveCreate, CollectiveRead
 from typing import Optional
 
-def create_collective(db: Session, collective_data: CollectiveCreate) -> CollectiveRead:
-    """Создание нового совхоза."""
+async def create_collective(db: AsyncSession, collective_data: CollectiveCreate) -> CollectiveRead:
+    """Асинхронное создание нового совхоза."""
     new_collective = Collective(**collective_data.dict())
     db.add(new_collective)
-    db.commit()
-    db.refresh(new_collective)
+    await db.commit()
+    await db.refresh(new_collective)
     return CollectiveRead.model_validate(new_collective)
 
-def get_collective(db: Session, collective_id: int) -> Optional[CollectiveRead]:
-    """Получение совхоза по ID."""
-    collective = db.query(Collective).filter(Collective.id == collective_id).first()
+async def get_collective(db: AsyncSession, collective_id: int) -> Optional[CollectiveRead]:
+    """Асинхронное получение совхоза по ID."""
+    result = await db.execute(select(Collective).where(Collective.id == collective_id))
+    collective = result.scalar_one_or_none()
     if collective:
         return CollectiveRead.model_validate(collective)
     return None
 
-def update_collective(db: Session, collective_id: int, updates: CollectiveCreate) -> Optional[CollectiveRead]:
-    """Обновление данных совхоза."""
-    collective = db.query(Collective).filter(Collective.id == collective_id).first()
+async def update_collective(db: AsyncSession, collective_id: int, updates: CollectiveCreate) -> Optional[CollectiveRead]:
+    """Асинхронное обновление данных совхоза."""
+    result = await db.execute(select(Collective).where(Collective.id == collective_id))
+    collective = result.scalar_one_or_none()
     if not collective:
         return None
     for key, value in updates.dict(exclude_unset=True).items():
         setattr(collective, key, value)
-    db.commit()
-    db.refresh(collective)
+    await db.commit()
+    await db.refresh(collective)
     return CollectiveRead.model_validate(collective)
 
-def delete_collective(db: Session, collective_id: int) -> bool:
-    """Удаление совхоза."""
-    collective = db.query(Collective).filter(Collective.id == collective_id).first()
+async def delete_collective(db: AsyncSession, collective_id: int) -> bool:
+    """Асинхронное удаление совхоза."""
+    result = await db.execute(select(Collective).where(Collective.id == collective_id))
+    collective = result.scalar_one_or_none()
     if not collective:
         return False
-    db.delete(collective)
-    db.commit()
+    await db.delete(collective)
+    await db.commit()
     return True

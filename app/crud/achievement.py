@@ -1,39 +1,43 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from models.achievement import Achievement
 from schemas.achievement import AchievementCreate, AchievementRead
 from typing import Optional
 
-def create_achievement(db: Session, achievement_data: AchievementCreate) -> AchievementRead:
-    """Создание нового достижения."""
+async def create_achievement(db: AsyncSession, achievement_data: AchievementCreate) -> AchievementRead:
+    """Асинхронное создание нового достижения."""
     new_achievement = Achievement(**achievement_data.dict())
     db.add(new_achievement)
-    db.commit()
-    db.refresh(new_achievement)
+    await db.commit()
+    await db.refresh(new_achievement)
     return AchievementRead.model_validate(new_achievement)
 
-def get_achievement(db: Session, achievement_id: int) -> Optional[AchievementRead]:
-    """Получение достижения по ID."""
-    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+async def get_achievement(db: AsyncSession, achievement_id: int) -> Optional[AchievementRead]:
+    """Асинхронное получение достижения по ID."""
+    result = await db.execute(select(Achievement).where(Achievement.id == achievement_id))
+    achievement = result.scalar_one_or_none()
     if achievement:
         return AchievementRead.model_validate(achievement)
     return None
 
-def update_achievement(db: Session, achievement_id: int, updates: AchievementCreate) -> Optional[AchievementRead]:
-    """Обновление данных достижения."""
-    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+async def update_achievement(db: AsyncSession, achievement_id: int, updates: AchievementCreate) -> Optional[AchievementRead]:
+    """Асинхронное обновление данных достижения."""
+    result = await db.execute(select(Achievement).where(Achievement.id == achievement_id))
+    achievement = result.scalar_one_or_none()
     if not achievement:
         return None
     for key, value in updates.dict(exclude_unset=True).items():
         setattr(achievement, key, value)
-    db.commit()
-    db.refresh(achievement)
+    await db.commit()
+    await db.refresh(achievement)
     return AchievementRead.model_validate(achievement)
 
-def delete_achievement(db: Session, achievement_id: int) -> bool:
-    """Удаление достижения."""
-    achievement = db.query(Achievement).filter(Achievement.id == achievement_id).first()
+async def delete_achievement(db: AsyncSession, achievement_id: int) -> bool:
+    """Асинхронное удаление достижения."""
+    result = await db.execute(select(Achievement).where(Achievement.id == achievement_id))
+    achievement = result.scalar_one_or_none()
     if not achievement:
         return False
-    db.delete(achievement)
-    db.commit()
+    await db.delete(achievement)
+    await db.commit()
     return True

@@ -1,39 +1,43 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from models.bonus import Bonus
 from schemas.bonus import BonusCreate, BonusRead
 from typing import Optional
 
-def create_bonus(db: Session, bonus_data: BonusCreate) -> BonusRead:
-    """Создание нового бонуса."""
+async def create_bonus(db: AsyncSession, bonus_data: BonusCreate) -> BonusRead:
+    """Асинхронное создание нового бонуса."""
     new_bonus = Bonus(**bonus_data.dict())
     db.add(new_bonus)
-    db.commit()
-    db.refresh(new_bonus)
+    await db.commit()
+    await db.refresh(new_bonus)
     return BonusRead.model_validate(new_bonus)
 
-def get_bonus(db: Session, bonus_id: int) -> Optional[BonusRead]:
-    """Получение бонуса по ID."""
-    bonus = db.query(Bonus).filter(Bonus.id == bonus_id).first()
+async def get_bonus(db: AsyncSession, bonus_id: int) -> Optional[BonusRead]:
+    """Асинхронное получение бонуса по ID."""
+    result = await db.execute(select(Bonus).where(Bonus.id == bonus_id))
+    bonus = result.scalar_one_or_none()
     if bonus:
         return BonusRead.model_validate(bonus)
     return None
 
-def update_bonus(db: Session, bonus_id: int, updates: BonusCreate) -> Optional[BonusRead]:
-    """Обновление данных бонуса."""
-    bonus = db.query(Bonus).filter(Bonus.id == bonus_id).first()
+async def update_bonus(db: AsyncSession, bonus_id: int, updates: BonusCreate) -> Optional[BonusRead]:
+    """Асинхронное обновление данных бонуса."""
+    result = await db.execute(select(Bonus).where(Bonus.id == bonus_id))
+    bonus = result.scalar_one_or_none()
     if not bonus:
         return None
     for key, value in updates.dict(exclude_unset=True).items():
         setattr(bonus, key, value)
-    db.commit()
-    db.refresh(bonus)
+    await db.commit()
+    await db.refresh(bonus)
     return BonusRead.model_validate(bonus)
 
-def delete_bonus(db: Session, bonus_id: int) -> bool:
-    """Удаление бонуса."""
-    bonus = db.query(Bonus).filter(Bonus.id == bonus_id).first()
+async def delete_bonus(db: AsyncSession, bonus_id: int) -> bool:
+    """Асинхронное удаление бонуса."""
+    result = await db.execute(select(Bonus).where(Bonus.id == bonus_id))
+    bonus = result.scalar_one_or_none()
     if not bonus:
         return False
-    db.delete(bonus)
-    db.commit()
+    await db.delete(bonus)
+    await db.commit()
     return True

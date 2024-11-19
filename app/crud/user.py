@@ -1,43 +1,39 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import update, delete
-from app.models.user import User
-from app.schemas.user import UserCreate, UserRead
+from sqlalchemy.orm import Session
+from models.user import User
+from schemas.user import UserCreate, UserRead
+from typing import Optional
 
-# Create
-async def create_user(db: AsyncSession, user_data: UserCreate) -> UserRead:
-    user = User(vk_id=user_data.vk_id, phone=user_data.phone)
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+def create_user(db: Session, user_data: UserCreate) -> UserRead:
+    """Создание нового пользователя."""
+    new_user = User(**user_data.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return UserRead.model_validate(new_user)
+
+def get_user(db: Session, user_id: int) -> Optional[UserRead]:
+    """Получение пользователя по ID."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        return UserRead.model_validate(user)
+    return None
+
+def update_user(db: Session, user_id: int, updates: UserCreate) -> Optional[UserRead]:
+    """Обновление данных пользователя."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return None
+    for key, value in updates.dict(exclude_unset=True).items():
+        setattr(user, key, value)
+    db.commit()
+    db.refresh(user)
     return UserRead.model_validate(user)
 
-# Read by ID
-async def get_user_by_id(db: AsyncSession, user_id: int) -> UserRead:
-    result = await db.execute(select(User).filter(User.id == user_id))
-    user = result.scalars().first()
-    return UserRead.model_validate(user) if user else None
-
-# Read by VK ID
-async def get_user_by_vk_id(db: AsyncSession, vk_id: str) -> UserRead:
-    result = await db.execute(select(User).filter(User.vk_id == vk_id))
-    user = result.scalars().first()
-    return UserRead.model_validate(user) if user else None
-
-# Update
-async def update_user(db: AsyncSession, user_id: int, user_data: UserCreate) -> UserRead:
-    result = await db.execute(
-        update(User)
-        .where(User.id == user_id)
-        .values(vk_id=user_data.vk_id, phone=user_data.phone)
-        .returning(User)
-    )
-    user = result.scalar_one_or_none()
-    await db.commit()
-    return UserRead.model_validate(user) if user else None
-
-# Delete
-async def delete_user(db: AsyncSession, user_id: int) -> bool:
-    result = await db.execute(delete(User).where(User.id == user_id))
-    await db.commit()
-    return result.rowcount > 0
+def delete_user(db: Session, user_id: int) -> bool:
+    """Удаление пользователя."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+    db.delete(user)
+    db.commit()
+    return True

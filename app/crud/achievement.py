@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.achievement import Achievement
-from schemas.achievement import AchievementCreate, AchievementRead
+from app.models.achievement import Achievement
+from app.schemas.achievement import AchievementCreate, AchievementRead
 from typing import Optional
 
 async def create_achievement(db: AsyncSession, achievement_data: AchievementCreate) -> AchievementRead:

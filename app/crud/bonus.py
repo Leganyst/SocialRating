@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.bonus import Bonus
-from schemas.bonus import BonusCreate, BonusRead
+from app.models.bonus import Bonus
+from app.schemas.bonus import BonusCreate, BonusRead
 from typing import Optional
 
 async def create_bonus(db: AsyncSession, bonus_data: BonusCreate) -> BonusRead:
     """Асинхронное создание нового бонуса."""
-    new_bonus = Bonus(**bonus_data.dict())
+    new_bonus = Bonus(**bonus_data.model_dump())
     db.add(new_bonus)
     await db.commit()
     await db.refresh(new_bonus)
@@ -26,7 +26,7 @@ async def update_bonus(db: AsyncSession, bonus_id: int, updates: BonusCreate) ->
     bonus = result.scalar_one_or_none()
     if not bonus:
         return None
-    for key, value in updates.dict(exclude_unset=True).items():
+    for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(bonus, key, value)
     await db.commit()
     await db.refresh(bonus)

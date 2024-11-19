@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.user import User
-from schemas.user import UserCreate, UserRead
+from app.models.user import User
+from app.schemas.user import UserCreate, UserRead
 from typing import Optional
 
 async def create_user(db: AsyncSession, user_data: UserCreate) -> UserRead:
     """Асинхронное создание нового пользователя."""
-    new_user = User(**user_data.dict())
+    new_user = User(**user_data.model_dump())
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
@@ -41,3 +41,12 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
     await db.delete(user)
     await db.commit()
     return True
+
+
+async def get_user_by_vk_id(db: AsyncSession, vk_id: str) -> Optional[UserRead]:
+    """Асинхронное извлечение юзера по его вк ид"""
+    result = await db.execute(select(User).where(User.vk_id == vk_id))
+    user = result.scalar_one_or_none()
+    if user:
+        return UserRead.model_validate(user)
+    return None

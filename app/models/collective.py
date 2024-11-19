@@ -9,4 +9,5 @@ class Collective(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     social_rating: Mapped[int] = mapped_column(Integer, default=0)
+    group_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     members: Mapped[list['User']] = relationship('User', back_populates='collective')

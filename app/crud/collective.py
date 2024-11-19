@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.collective import Collective
-from schemas.collective import CollectiveCreate, CollectiveRead
+from app.models.collective import Collective
+from app.schemas.collective import CollectiveCreate, CollectiveRead
 from typing import Optional
 
 async def create_collective(db: AsyncSession, collective_data: CollectiveCreate) -> CollectiveRead:
     """Асинхронное создание нового совхоза."""
-    new_collective = Collective(**collective_data.dict())
+    new_collective = Collective(**collective_data.model_dump())
     db.add(new_collective)
     await db.commit()
     await db.refresh(new_collective)
@@ -26,7 +26,7 @@ async def update_collective(db: AsyncSession, collective_id: int, updates: Colle
     collective = result.scalar_one_or_none()
     if not collective:
         return None
-    for key, value in updates.dict(exclude_unset=True).items():
+    for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(collective, key, value)
     await db.commit()
     await db.refresh(collective)

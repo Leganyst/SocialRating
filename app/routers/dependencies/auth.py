@@ -47,7 +47,7 @@ async def check_valid_token(token: str = Depends(get_token)) -> bool:
     ordered = {k: query_params[k] for k in vk_subset}
     hash_code = b64encode(
         HMAC(
-            settings.service_key.encode(),
+            settings.application_secret_key.encode(),
             urlencode(ordered, doseq=True).encode(),
             sha256
         ).digest()

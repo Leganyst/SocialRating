@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db 
+from app.crud.collective import create_collective, get_collective
 from app.crud.user import create_user
+from app.schemas.collective import CollectiveCreate
 from app.schemas.user import UserCreate, UserRead
 from app.routers.dependencies.auth import get_query_params, get_user_depend
 
@@ -63,9 +65,27 @@ async def auth_user(user: UserRead = Depends(get_user_depend), session: AsyncSes
     Если пользователь не найден в базе данных, создается новый пользователь.
     Можно использовать как GetMe ручку, для получения обновленной информации о пользователе.
     """
+    if user_data.get("vk_group_id"):
+        collective = await get_collective(session, user_data.get("vk_group_id"))
+        if not collective: 
+            pass
+            # collective_data = await get_vk_inform()
+            # await create_collective(session, CollectiveCreate(
+            #    vk_id=collective_data.get("vk_group_id"),
+            #    name=collective_data.get("name"),
+            
+            # ))
+    
     if not user:
         user = await create_user(session, UserCreate(
             vk_id=user_data.get("vk_user_id"),
-            phone=None
+            username=None,
+            rice=0,
+            clicks=0,
+            invited_users=0,
+            achievements_count=0,
+            social_rating=0,
+            collective_id=user_data.get("vk_group_id"),
+            active_bonuses=[]
         ))
     return user

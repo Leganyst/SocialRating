@@ -4,6 +4,7 @@ from typing import List
 class CollectiveBase(BaseModel):
     name: str = Field(..., description="Название совхоза")
     social_rating: int = Field(0, description="Социальный рейтинг совхоза")
+    group_id: str = Field(..., description="ID группы совхоза в социальной сети")
 
     model_config = ConfigDict(from_attributes=True)
 

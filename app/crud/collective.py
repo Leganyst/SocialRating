@@ -30,6 +30,7 @@ async def get_collective(db: AsyncSession, collective_id: int) -> Optional[Colle
         return CollectiveRead.model_validate(collective)
     return None
 
+
 async def update_collective(db: AsyncSession, collective_id: int, updates: CollectiveCreate) -> Optional[CollectiveRead]:
     """Асинхронное обновление данных совхоза."""
     result = await db.execute(select(Collective).where(Collective.id == collective_id))
@@ -41,6 +42,7 @@ async def update_collective(db: AsyncSession, collective_id: int, updates: Colle
     await db.commit()
     await db.refresh(collective)
     return CollectiveRead.model_validate(collective)
+
 
 async def delete_collective(db: AsyncSession, collective_id: int) -> bool:
     """Асинхронное удаление совхоза."""

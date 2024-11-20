@@ -34,3 +34,5 @@ class UserRead(UserBase):
             collective_id=1,
             active_bonuses=[1, 2]
         )
+        
+    

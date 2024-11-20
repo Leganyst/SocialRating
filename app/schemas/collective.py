@@ -17,3 +17,6 @@ class CollectiveCreate(CollectiveBase):
 class CollectiveRead(CollectiveBase):
     id: int = Field(..., description="Уникальный идентификатор совхоза")
     members: List = Field(default_factory=list, description="Список участников совхоза")
+    
+    class Config:
+        exclude = {"members"}  # Исключаем members

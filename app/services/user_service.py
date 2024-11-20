@@ -1,4 +1,5 @@
 from app.models.user import User
+from app.schemas.collective import CollectiveRead
 from app.schemas.user import UserCreate, UserRead
 from app.crud.user import get_user_by_vk_id, update_user_collective
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -55,8 +56,14 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
         .where(User.id == user.id)
     )
     user = result.scalar_one()
-
+    
     return {
         "user": UserRead.model_validate(user),
-        "collective": collective
+        "collective": (
+            collective if collective
+            else CollectiveRead.model_validate({
+                **user.collective.__dict__,  # Сериализуем атрибуты модели
+                "members": []  # Принудительно заменяем members на пустое значение
+            })
+        )
     }

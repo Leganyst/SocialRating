@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.models.collective import Collective
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
 from typing import Optional
@@ -70,6 +71,62 @@ async def update_user_collective(session: AsyncSession, user: User, collective_i
     :return: Обновленный пользователь.
     """
     user.collective_id = collective_id
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+async def update_user_rice_and_rating(session: AsyncSession, user_id: int, rice_to_deduct: int, rating_to_add: int) -> User:
+    """
+    Обновляет рис и рейтинг пользователя.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user_id: ID пользователя.
+    :param rice_to_deduct: Количество риса для вычитания.
+    :param rating_to_add: Количество рейтинга для добавления.
+    :return: Обновленный объект пользователя.
+    """
+    result = await session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one()
+    user.rice -= rice_to_deduct
+    user.social_rating += rating_to_add
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+async def update_collective_rating(session: AsyncSession, collective_id: int, rating_to_add: int) -> int:
+    """
+    Обновляет социальный рейтинг совхоза.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param collective_id: ID совхоза.
+    :param rating_to_add: Количество рейтинга для добавления.
+    :return: Обновленный общий рейтинг совхоза.
+    """
+    result = await session.execute(select(Collective).where(Collective.id == collective_id))
+    collective = result.scalar_one()
+    collective.social_rating += rating_to_add
+    session.add(collective)
+    await session.commit()
+    await session.refresh(collective)
+    return collective.social_rating
+
+
+async def update_user_rice(session: AsyncSession, user_id: int, rice_to_add: int) -> User:
+    """
+    Обновляет количество риса у пользователя.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user_id: ID пользователя.
+    :param rice_to_add: Количество риса для добавления.
+    :return: Обновленный объект пользователя.
+    """
+    result = await session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one()
+    user.rice += rice_to_add
     session.add(user)
     await session.commit()
     await session.refresh(user)

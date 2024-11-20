@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 class UserBase(BaseModel):
-    username: str = Field(..., description="Имя пользователя")
+    username: Optional[str] = Field(default=None, description="Имя пользователя")
     vk_id: str = Field(..., description="ID пользователя в социальной сети")
     rice: int = Field(0, description="Количество риса, заработанного пользователем")
     clicks: int = Field(0, description="Количество кликов пользователя")

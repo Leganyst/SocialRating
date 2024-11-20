@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends, HTTPException, status
@@ -9,6 +10,8 @@ from hashlib import sha256
 from hmac import HMAC
 from base64 import b64encode
 from urllib.parse import urlparse, parse_qsl, urlencode
+
+from app.schemas.user import UserRead
 
 
 async def get_token(authorization: HTTPAuthorizationCredentials = Depends(HTTPBearer())) -> str:
@@ -73,7 +76,7 @@ async def get_query_params(token: str = Depends(get_token)) -> dict:
     return query_params
 
 
-async def verification_user(token_is_valid: bool = Depends(check_valid_token), token: str = Depends(get_token), session: AsyncSession = Depends(get_db)):
+async def verification_user(token_is_valid: bool = Depends(check_valid_token), token: str = Depends(get_token), session: AsyncSession = Depends(get_db)) -> Optional[UserRead]:
     """
     Зависимость для проверки токена и получения пользователя
     """
@@ -93,7 +96,7 @@ async def verification_user(token_is_valid: bool = Depends(check_valid_token), t
     return user
 
 
-async def get_user_depend(user: dict = Depends(verification_user)):
+async def get_user_depend(user: UserRead = Depends(verification_user)) -> Optional[UserRead]:
     """
     Зависимость для получения пользователя
     """

@@ -14,21 +14,52 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
+from fastapi import APIRouter, Depends, status, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
+from app.services.auth_service import handle_authentication
+from app.routers.dependencies.auth import get_query_params
+
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"],
+)
+
 @router.get(
     "/",
     summary="Аутентификация и проверка пользователя и коллектива",
     description="""
         Выполняет аутентификацию пользователя и привязку к коллективу.
-        - Если пользователь заходит с новой группой, создается или обновляется коллектив.
-        - Возвращаются данные пользователя и текущего коллектива (если есть).
+        - Если пользователь заходит впервые, он создается.
+        - Если пользователь заходит впервые и указывает группу, она проверяется или создается.
+        - Если пользователь возвращается, проверяется его привязка к группе и обновляется при необходимости.
     """,
-    response_model=UserRead,
+    response_model=dict,
     responses={
         200: {
             "description": "Успешная аутентификация.",
             "content": {
                 "application/json": {
-                    "example": UserRead.example()
+                    "example": {
+                        "user": {
+                            "id": 1,
+                            "vk_id": "123456789",
+                            "username": "example_user",
+                            "rice": 100,
+                            "clicks": 50,
+                            "social_rating": 10,
+                            "active_bonuses": [],
+                            "collective_id": 1
+                        },
+                        "collective": {
+                            "id": 1,
+                            "name": "Example Collective",
+                            "social_rating": 100,
+                            "group_id": "987654321",
+                            "members": []
+                        }
+                    }
                 }
             },
         },
@@ -37,28 +68,17 @@ router = APIRouter(
     },
 )
 async def authenticate_user(
-    user: UserRead = Depends(get_user_depend),
     query_params: dict = Depends(get_query_params),
     session: AsyncSession = Depends(get_db),
 ):
     """
     Выполняет аутентификацию пользователя и проверку коллектива.
     """
-    
+    vk_id = query_params.get("vk_user_id")
     group_id = query_params.get("vk_group_id")
-    if not group_id:
-        if not user:
-            result = await create_user(session, UserCreate(
-                username=None,
-                vk_id=query_params.get("vk_user_id"),
-                rice=0,
-                clicks=0,
-                invited_users=0,
-                achievements_count=0,
-                social_rating=0,
-                collective_id=None
-            ))
-            return result
-        return user
-    result = await handle_authentication(session, query_params, int(group_id))
+
+    if not vk_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing vk_user_id in token")
+
+    result = await handle_authentication(session, vk_id, int(group_id) if group_id else None)
     return result

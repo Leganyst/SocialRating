@@ -10,6 +10,7 @@ class BonusBase(BaseModel):
     cost_modifier: float = Field(..., description="Модификатор удорожания бонуса")
     max_level: Optional[int] = Field(None, description="Максимальный уровень бонуса")
     effect: str = Field(..., description="Эффект, предоставляемый бонусом")
+    image: Optional[str] = Field(None, description="Ссылка на изображение")
 
     class Config:
         from_attributes = True

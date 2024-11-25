@@ -7,6 +7,7 @@ SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
+    expire_on_commit=False,
     class_=AsyncSession
 )
 

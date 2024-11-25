@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.bonus import PurchasableBonus, UserBonus
+from app.models.user import User
 from app.schemas.bonus import BonusCreate, BonusRead, BonusUpdate
 from typing import Optional, List
 
@@ -118,3 +119,14 @@ async def add_or_upgrade_user_bonus(session: AsyncSession, user_id: int, bonus_i
     await session.refresh(user_bonus)
 
     return user_bonus
+
+
+async def get_all_bonuses(session: AsyncSession) -> List[BonusRead]:
+    """
+    Получает список всех покупаемых бонусов.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :return: Список всех бонусов.
+    """
+    result = await session.execute(select(PurchasableBonus))
+    return [BonusRead.model_validate(bonus) for bonus in result.scalars().all()]

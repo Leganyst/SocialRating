@@ -12,6 +12,7 @@ class PurchasableBonus(Base):
     cost_modifier: Mapped[Float] = mapped_column(Float, nullable=False, default=1.2)  # Модификатор удорожания
     max_level: Mapped[int] = mapped_column(Integer, nullable=True)  # Максимальный уровень
     effect: Mapped[str] = mapped_column(String, nullable=False)  # Описание эффекта бонуса
+    image: Mapped[str] = mapped_column(String, nullable=True)  # Ссылка на изображение
 
     user_bonuses: Mapped[list["UserBonus"]] = relationship("UserBonus", back_populates="bonus")
 

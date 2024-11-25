@@ -10,7 +10,7 @@ router = APIRouter(
     responses={404: {"description": "Achievement not found"}},
 )
 
-@router.post("/", response_model=AchievementRead, summary="Создать достижение")
+@router.post("/", response_model=AchievementCreate, summary="Создать достижение")
 async def create_achievement_endpoint(achievement_data: AchievementCreate, db: AsyncSession = Depends(get_db)):
     """
     Создает новое достижение с переданными данными.

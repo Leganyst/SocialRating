@@ -6,16 +6,18 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from app.core.database import engine, Base
 from app.models import achievement, bonus, collective, user
 from app.routers.auth import router as auth_router
-from app.routers.crud_endpoint_achievement import router as achievement_router
+from app.routers.crud_endpoint_achievement import router as achievement_router_crud
 from app.routers.crud_endpoint_collective import router as collective_router
-from app.routers.crud_endpoint_bonus import router as bonus_router
+from app.routers.crud_endpoint_bonus import router as bonus_router_сrud
 from app.routers.crud_endpoint_user import router as user_router
 from app.routers.clicker import router as clicker
+from app.routers.bonus import router as bonus_router
+from app.routers.achievement import router as achievement_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     await engine.dispose()
@@ -47,9 +49,12 @@ async def custom_swagger_ui_html():
     )
 
 
+
 app.include_router(auth_router)
 app.include_router(user_router)
-app.include_router(bonus_router)
+app.include_router(bonus_router_сrud)
 app.include_router(collective_router)
-app.include_router(achievement_router)
+app.include_router(achievement_router_crud)
 app.include_router(clicker)
+app.include_router(bonus_router)
+app.include_router(achievement_router)

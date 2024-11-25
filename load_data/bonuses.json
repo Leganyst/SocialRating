@@ -1,0 +1,83 @@
+[
+    {
+      "id": 1,
+      "name": "Тапочки-Рыбы",
+      "description": "Мокрые, но стильные",
+      "base_cost": 1000,
+      "cost_modifier": 1.2,
+      "max_level": 0,
+      "effect": "Автосбор 100 рис в час",
+      "image": ""
+    },
+    {
+      "id": 2,
+      "name": "Огородный Тяпка",
+      "description": "Тяпка огород приносить радость",
+      "base_cost": 1000,
+      "cost_modifier": 2,
+      "max_level": 0,
+      "effect": "Автосбор +1 минута",
+      "image": ""
+    },
+    {
+      "id": 3,
+      "name": "Телескоп для смартфона",
+      "description": "Видеть рис издалека",
+      "base_cost": 3000,
+      "cost_modifier": 1.5,
+      "max_level": 0,
+      "effect": "2% к сбору Рис",
+      "image": ""
+    },
+    {
+      "id": 4,
+      "name": "Массажёр для лоб",
+      "description": "Помогает думать о Партия",
+      "base_cost": 2500,
+      "cost_modifier": 1.5,
+      "max_level": 0,
+      "effect": "2% к скорости автосбора",
+      "image": ""
+    },
+    {
+      "id": 5,
+      "name": "Отпуск остров Хайнань",
+      "description": "Отдохнуть и продолжать трудиться",
+      "base_cost": 5000,
+      "cost_modifier": 1.4,
+      "max_level": 0,
+      "effect": "Автосбор 300 рис в час",
+      "image": ""
+    },
+    {
+      "id": 6,
+      "name": "Кошко-жена",
+      "description": "Лучшее, что вы можете получить от Партия",
+      "base_cost": 20000,
+      "cost_modifier": 1.5,
+      "max_level": 0,
+      "effect": "Автосбор 500 рис в час; 20% к сбору рис",
+      "image": ""
+    },
+    {
+      "id": 7,
+      "name": "Кепка с Вентилятор",
+      "description": "Прохлаждайся, пока работаешь",
+      "base_cost": 10000,
+      "cost_modifier": 1.5,
+      "max_level": 0,
+      "effect": "10% к скорости автосбора",
+      "image": ""
+    },
+    {
+      "id": 8,
+      "name": "Зарядка на солнечной энергии",
+      "description": "Заряди себя и друзей",
+      "base_cost": 10000,
+      "cost_modifier": 1.4,
+      "max_level": 0,
+      "effect": "x2 к бонусу за привлечение друга",
+      "image": ""
+    }
+  ]
+  

@@ -1,22 +1,26 @@
-from pydantic import BaseModel, ConfigDict, Field
-from typing import List, Optional
-from app.models.collective import CollectiveType
+from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class CollectiveBase(BaseModel):
-    name: str = Field(..., description="Название совхоза")
-    social_rating: int = Field(0, description="Социальный рейтинг совхоза")
-    group_id: str = Field(..., description="ID группы совхоза в социальной сети")
-    collective_type: Optional[CollectiveType] = Field(CollectiveType.start, description="Тип совхоза")
+    id: int = Field(..., description="Уникальный идентификатор коллектива")
+    name: str = Field(..., description="Название коллектива")
+    social_rating: int = Field(..., description="Общий социальный рейтинг коллектива")
+    type: str = Field(..., description="Тип коллектива (например, 'Начальный совхоз')")
+    bonus: Optional[str] = Field(None, description="Бонусы текущего уровня коллектива")
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
-class CollectiveCreate(CollectiveBase):
-    pass
+
+class CollectiveCreate(BaseModel):
+    name: str = Field(..., description="Название нового коллектива")
+
 
 class CollectiveRead(CollectiveBase):
-    id: int = Field(..., description="Уникальный идентификатор совхоза")
-    members: List = Field(default_factory=list, description="Список участников совхоза")
-    
-    class Config:
-        exclude = {"members"}  # Исключаем members
+    pass
+
+
+class CollectiveUpdate(BaseModel):
+    name: Optional[str] = Field(None, description="Обновленное название коллектива")
+    bonus: Optional[str] = Field(None, description="Обновленные бонусы коллектива")

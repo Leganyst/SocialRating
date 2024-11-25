@@ -1,25 +1,10 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.database import get_db 
-from app.services.auth_service import handle_authentication
-from app.crud.collective import create_collective, get_collective
-from app.crud.user import create_user
-from app.schemas.collective import CollectiveCreate
-from app.schemas.user import UserCreate, UserRead
-from app.routers.dependencies.auth import get_query_params, get_user_depend
-
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"],
-)
-
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.database import get_db
 from app.services.auth_service import handle_authentication
 from app.routers.dependencies.auth import get_query_params
+from app.schemas.user import UserBase
+from app.schemas.collective import CollectiveBase
 
 router = APIRouter(
     prefix="/auth",
@@ -31,6 +16,8 @@ router = APIRouter(
     summary="Аутентификация и проверка пользователя и коллектива",
     description="""
         Выполняет аутентификацию пользователя и привязку к коллективу.
+        
+        Возможные сценарии:
         - Если пользователь заходит впервые, он создается.
         - Если пользователь заходит впервые и указывает группу, она проверяется или создается.
         - Если пользователь возвращается, проверяется его привязка к группе и обновляется при необходимости.
@@ -48,23 +35,39 @@ router = APIRouter(
                             "username": "example_user",
                             "rice": 100,
                             "clicks": 50,
+                            "invited_users": 5,
+                            "achievements_count": 2,
                             "social_rating": 10,
-                            "active_bonuses": [],
+                            "current_core": "Железный стержень",
                             "collective_id": 1
                         },
                         "collective": {
                             "id": 1,
-                            "name": "Example Collective",
-                            "social_rating": 100,
-                            "group_id": "987654321",
-                            "members": []
+                            "name": "Примерный коллектив",
+                            "social_rating": 150,
+                            "type": "Начальный совхоз",
+                            "bonus": "Скорость работы +10%"
                         }
                     }
                 }
             },
         },
-        400: {"description": "В токене отсутствует параметр `vk_group_id`."},
-        401: {"description": "Токен не прошел проверку подлинности."},
+        400: {
+            "description": "Ошибка: отсутствует параметр `vk_user_id` в токене.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Missing vk_user_id in token"}
+                }
+            },
+        },
+        401: {
+            "description": "Ошибка проверки подлинности токена.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Token validation failed"}
+                }
+            },
+        },
     },
 )
 async def authenticate_user(

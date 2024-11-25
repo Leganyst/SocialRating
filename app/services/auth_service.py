@@ -1,7 +1,6 @@
-from sqlalchemy import select
+from app.services.user_service import create_or_update_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from app.services.user_service import create_or_update_user
 
 
 async def handle_authentication(session: AsyncSession, vk_id: str, group_id: Optional[int] = None) -> dict:

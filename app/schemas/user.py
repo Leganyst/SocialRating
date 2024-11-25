@@ -1,38 +1,35 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from typing import Optional
 
+
 class UserBase(BaseModel):
-    username: Optional[str] = Field(default=None, description="Имя пользователя")
-    vk_id: str = Field(..., description="ID пользователя в социальной сети")
-    rice: int = Field(0, description="Количество риса, заработанного пользователем")
-    clicks: int = Field(0, description="Количество кликов пользователя")
-    invited_users: int = Field(0, description="Количество приглашенных пользователей")
-    achievements_count: int = Field(0, description="Количество достижений пользователя")
-    social_rating: int = Field(0, description="Социальный рейтинг пользователя")
-    collective_id: Optional[int] = Field(None, description="ID совхоза, к которому привязан пользователь")
+    id: int = Field(..., description="Уникальный идентификатор пользователя")
+    vk_id: str = Field(..., description="VK ID пользователя")
+    username: Optional[str] = Field(None, description="Имя пользователя")
+    rice: int = Field(..., description="Количество собранного риса")
+    clicks: int = Field(..., description="Количество кликов пользователя")
+    invited_users: int = Field(..., description="Количество приглашенных пользователей")
+    achievements_count: int = Field(..., description="Количество достижений пользователя")
+    social_rating: int = Field(..., description="Социальный рейтинг пользователя")
+    current_core: Optional[str] = Field(None, description="Название текущего стержня пользователя")
+    collective_id: Optional[int] = Field(None, description="ID коллектива, к которому принадлежит пользователь")
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
-class UserCreate(UserBase):
-    pass
 
 class UserRead(UserBase):
-    id: int = Field(..., description="Уникальный идентификатор пользователя")
-    active_bonuses: list = Field(default_factory=list, description="Активные бонусы пользователя")
+    pass
 
-    @classmethod
-    def example(cls): 
-        return cls(
-            id=1,
-            vk_id="vk_id",
-            username="user",
-            rice=100,
-            clicks=100,
-            invited_users=10,
-            achievements_count=5,
-            social_rating=100,
-            collective_id=1,
-            active_bonuses=[1, 2]
-        )
-        
-    
+
+class UserCreate(BaseModel):
+    vk_id: str = Field(..., description="VK ID нового пользователя")
+    username: Optional[str] = Field(None, description="Имя нового пользователя")
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = Field(None, description="Обновленное имя пользователя")
+    social_rating: Optional[int] = Field(None, description="Обновленный социальный рейтинг пользователя")
+    rice: Optional[int] = Field(None, description="Обновленное количество собранного риса")
+    clicks: Optional[int] = Field(None, description="Обновленное количество кликов пользователя")
+    collective_id: Optional[int] = Field(None, description="Обновленный ID коллектива пользователя")

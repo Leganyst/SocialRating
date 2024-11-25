@@ -1,12 +1,12 @@
 from app.models.user import User
-from app.schemas.collective import CollectiveRead
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserDetail, UserBase
+from app.schemas.collective import CollectiveBase
 from app.crud.user import get_user_by_vk_id, update_user_collective
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from app.services.collective_service import get_or_create_collective
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import Optional
+
 
 async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Optional[int] = None) -> dict:
     """
@@ -17,53 +17,35 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
     :param group_id: ID группы VK.
     :return: Словарь с данными пользователя и коллектива (если применимо).
     """
-    # Пытаемся получить пользователя по VK ID с предзагрузкой зависимостей
-    result = await session.execute(
-        select(User)
-        .options(selectinload(User.active_bonuses), selectinload(User.collective))
-        .where(User.vk_id == vk_id)
-    )
+    # Пытаемся получить пользователя по VK ID
+    result = await session.execute(select(User).where(User.vk_id == vk_id))
     user = result.scalar_one_or_none()
 
     # Если пользователь не существует, создаем нового
     if not user:
-        user_data = UserCreate(
-            vk_id=vk_id,
-            username=None,
-            rice=0,
-            clicks=0,
-            invited_users=0,
-            achievements_count=0,
-            social_rating=0,
-            collective_id=None
-        )
-        user = User(**user_data.model_dump())
+        user_data = {
+            "vk_id": vk_id,
+            "username": None,
+            "rice": 0,
+            "clicks": 0,
+            "invited_users": 0,
+            "achievements_count": 0,
+            "social_rating": 0,
+            "collective_id": None
+        }
+        user = User(**user_data)
         session.add(user)
         await session.commit()
         await session.refresh(user)
 
-    # Если указан group_id, проверяем или обновляем привязку к группе
+    # Если указан group_id, проверяем или обновляем привязку к коллективу
     collective = None
-    if group_id:
-        if not user.collective_id or not user.collective or user.collective.group_id != str(group_id):
-            collective = await get_or_create_collective(session, group_id)
-            user = await update_user_collective(session, user, collective.id)
+    if group_id and (not user.collective_id or str(group_id) != str(user.collective_id)):
+        collective = await get_or_create_collective(session, group_id)
+        await update_user_collective(session, user, collective.id)
 
-    # Заново загружаем пользователя с зависимостями для корректной сериализации
-    result = await session.execute(
-        select(User)
-        .options(selectinload(User.active_bonuses), selectinload(User.collective))
-        .where(User.id == user.id)
-    )
-    user = result.scalar_one()
-    
-    return {
-        "user": UserRead.model_validate(user),
-        "collective": (
-            collective if collective
-            else CollectiveRead.model_validate({
-                **user.collective.__dict__,  # Сериализуем атрибуты модели
-                "members": []  # Принудительно заменяем members на пустое значение
-            })
-        )
-    }
+    # Подготовка данных для возврата
+    user_data = UserBase.model_validate(user)  # Используем UserBase для базовой информации о пользователе
+    collective_data = CollectiveBase.model_validate(collective) if collective else None
+
+    return {"user": user_data, "collective": collective_data}

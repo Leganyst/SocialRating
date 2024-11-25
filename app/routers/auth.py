@@ -83,5 +83,5 @@ async def authenticate_user(
     if not vk_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing vk_user_id in token")
 
-    result = await handle_authentication(session, vk_id, int(group_id) if group_id else None)
+    result = await handle_authentication(session, vk_id, group_id)
     return result

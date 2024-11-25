@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app.models.collective import Collective
 from app.schemas.collective import CollectiveCreate, CollectiveRead, CollectiveUpdate
 from typing import Optional
-
+from fastapi import HTTPException
 
 async def create_collective(session: AsyncSession, collective_data: CollectiveCreate) -> CollectiveRead:
     """
@@ -90,3 +90,33 @@ async def get_collective_members(session: AsyncSession, collective_id: int, limi
         select(User).where(User.collective_id == collective_id).limit(limit)
     )
     return result.scalars().all()
+
+
+async def update_collective_rating(session: AsyncSession, collective_id: int, rating_to_add: int) -> int:
+    """
+    Обновляет социальный рейтинг коллектива.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param collective_id: ID коллектива.
+    :param rating_to_add: Количество рейтинга для добавления.
+    :return: Обновленный общий рейтинг коллектива.
+    """
+    # Получаем коллектив по ID
+    result = await session.execute(select(Collective).where(Collective.id == collective_id))
+    collective = result.scalar_one_or_none()
+
+    if not collective:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Collective with ID {collective_id} not found."
+        )
+
+    # Увеличиваем социальный рейтинг
+    collective.social_rating += rating_to_add
+
+    # Сохраняем изменения
+    session.add(collective)
+    await session.commit()
+    await session.refresh(collective)
+
+    return collective.social_rating

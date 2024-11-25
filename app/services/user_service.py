@@ -1,5 +1,5 @@
 from app.models.user import User
-from app.schemas.user import UserDetail, UserBase
+from app.schemas.user import UserBase
 from app.schemas.collective import CollectiveBase
 from app.crud.user import get_user_by_vk_id, update_user_collective
 from app.services.collective_service import get_or_create_collective
@@ -42,7 +42,7 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
     collective = None
     if group_id and (not user.collective_id or str(group_id) != str(user.collective_id)):
         collective = await get_or_create_collective(session, group_id)
-        await update_user_collective(session, user, collective.id)
+        await update_user_collective(session, vk_id, collective.id)
 
     # Подготовка данных для возврата
     user_data = UserBase.model_validate(user)  # Используем UserBase для базовой информации о пользователе

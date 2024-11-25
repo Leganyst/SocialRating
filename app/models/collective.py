@@ -20,6 +20,7 @@ class Collective(Base):
     social_rating: Mapped[int] = mapped_column(Integer, default=0)  # Общий рейтинг (сумма рейтингов участников)
     type: Mapped[CollectiveType] = mapped_column(Enum(CollectiveType), default=CollectiveType.INITIAL)  # Тип
     bonus: Mapped[str] = mapped_column(String, nullable=True)  # Бонусы текущего уровня
+    group_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Идентификатор группы VK (обязательный)
 
     # Связь с участниками
     members: Mapped[list["User"]] = relationship("User", back_populates="collective")

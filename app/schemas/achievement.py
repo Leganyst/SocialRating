@@ -11,7 +11,7 @@ class AchievementBase(BaseModel):
     visual: Optional[str] = Field(None, description="Путь к изображению достижения")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AchievementCreate(BaseModel):

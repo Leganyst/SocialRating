@@ -11,7 +11,7 @@ from app.schemas.collective import CollectiveCreate
 from app.utils.vk_api import get_group_info
 from app.crud.collective import get_collective, create_collective
 
-async def get_or_create_collective(session: AsyncSession, group_id: int) -> Collective:
+async def get_or_create_collective(session: AsyncSession, group_id: str) -> Collective:
     """
     Проверяет существование коллектива или создает новый.
 
@@ -19,19 +19,19 @@ async def get_or_create_collective(session: AsyncSession, group_id: int) -> Coll
     :param group_id: ID группы VK.
     :return: Объект коллектива.
     """
-    # Пытаемся получить коллектив по ID
-    collective = await session.execute(
-        select(Collective).options(selectinload(Collective.members)).where(Collective.group_id == str(group_id))
+    # Проверяем наличие коллектива с указанным group_id
+    result = await session.execute(
+        select(Collective).where(Collective.group_id == group_id)
     )
-    collective = collective.scalar_one_or_none()
+    collective = result.scalar_one_or_none()
 
     # Если коллектив не найден, создаем новый
     if not collective:
-        group_info = await get_group_info(group_id)
+        group_info = await get_group_info(group_id)  # Функция для получения информации о группе VK
         collective_data = CollectiveCreate(
             name=group_info.get("name", f"Группа {group_id}"),
-            social_rating=0,  # Начальный рейтинг
-            group_id=str(group_id)
+            social_rating=0,
+            group_id=group_id
         )
         collective = await create_collective(session, collective_data)
 

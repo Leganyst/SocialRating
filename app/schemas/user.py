@@ -15,7 +15,7 @@ class UserBase(BaseModel):
     collective_id: Optional[int] = Field(None, description="ID коллектива, к которому принадлежит пользователь")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserRead(UserBase):

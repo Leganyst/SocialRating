@@ -130,3 +130,30 @@ async def update_user_rice(session: AsyncSession, user_id: int, rice_to_add: int
     await session.commit()
     await session.refresh(user)
     return UserRead.model_validate(user)
+
+
+async def update_user_collective(session: AsyncSession, vk_id: str, collective_id: int) -> User:
+    """
+    Обновляет привязку пользователя к коллективу.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user: Объект пользователя, чья привязка обновляется.
+    :param collective_id: ID нового коллектива.
+    :return: Обновленный объект пользователя.
+    """
+    user = await session.execute(select(User).where(User.vk_id == vk_id))
+    user = user.scalar_one_or_none()
+    
+    # Проверяем, нужно ли обновлять привязку
+    if user.collective_id == collective_id:
+        return user
+
+    # Обновляем привязку пользователя к коллективу
+    user.collective_id = collective_id
+
+    # Сохраняем изменения
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    return user

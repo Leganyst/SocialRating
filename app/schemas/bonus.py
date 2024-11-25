@@ -12,7 +12,7 @@ class BonusBase(BaseModel):
     effect: str = Field(..., description="Эффект, предоставляемый бонусом")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class BonusCreate(BonusBase):

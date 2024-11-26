@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.collective import Collective
+from app.models.collective import Collective, CollectiveType, collective_factory
 from app.schemas.collective import CollectiveCreate, CollectiveRead, CollectiveUpdate
 from typing import Optional
 from fastapi import HTTPException
@@ -119,4 +119,33 @@ async def update_collective_rating(session: AsyncSession, collective_id: int, ra
     await session.commit()
     await session.refresh(collective)
 
-    return collective.social_rating
+    return collective.social_rating\
+    
+
+async def update_collective_level(session: AsyncSession, collective: Collective) -> Collective:
+    """
+    Обновляет уровень совхоза, если его рейтинг достиг следующего уровня.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param collective: Объект текущего коллектива.
+    :return: Обновленный объект коллектива.
+    """
+    current_type = collective.type
+    types = list(CollectiveType)
+    current_index = types.index(current_type)
+
+    # Проверяем, можно ли перейти на следующий уровень
+    if current_index + 1 < len(types):
+        next_type = types[current_index + 1]
+        next_bonuses = collective_factory(next_type)
+
+        if "required_rating" not in next_bonuses:
+            raise ValueError(f"Не найден required_rating для {next_type.value}")
+
+        if collective.social_rating >= next_bonuses["required_rating"]:  # Проверяем рейтинг
+            collective.type = next_type
+            session.add(collective)
+            await session.commit()
+            await session.refresh(collective)
+
+    return collective

@@ -51,9 +51,10 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
             user.start_collective_id = collective.id
             session.add(user)
             await session.commit()
+            await session.refresh(user)
 
     # Подготовка данных для возврата
     user_data = UserBase.model_validate(user)  # Используем UserBase для базовой информации о пользователе
     collective_data = CollectiveBase.model_validate(collective) if collective else None
 
-    return {"user": user_data, "collective": collective_data}
+    return {"user": user, "collective": collective_data}

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.auth_service import handle_authentication
 from app.routers.dependencies.auth import get_query_params
-from app.schemas.user import UserBase
+from app.schemas.user import UserBase, UserRead
 from app.schemas.collective import CollectiveBase
 
 router = APIRouter(
@@ -69,6 +69,11 @@ router = APIRouter(
             },
         },
     },
+)
+@router.get(
+    "/",
+    summary="Аутентификация и проверка пользователя и коллектива",
+    response_model=dict
 )
 async def authenticate_user(
     query_params: dict = Depends(get_query_params),

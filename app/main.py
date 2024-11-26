@@ -41,13 +41,13 @@ app.add_middleware(
 )
 
 @app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
+async def custom_swagger_ui_html_github():
     return get_swagger_ui_html(
-        openapi_url=app.openapi_url,
-        title=app.title + " - Swagger UI",
-        swagger_css_url="https://cdn.jsdelivr.net/gh/Itz-fork/Fastapi-Swagger-UI-Dark/assets/swagger_ui_dark.min.css"
-    )
-
+    openapi_url=app.openapi_url,
+    title=f"{app.title} - Swagger UI",
+    # swagger_ui_dark.css raw url
+    swagger_css_url="https://raw.githubusercontent.com/Itz-fork/Fastapi-Swagger-UI-Dark/main/assets/swagger_ui_dark.min.css"
+)
 
 
 app.include_router(auth_router)

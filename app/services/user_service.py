@@ -31,7 +31,8 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
             "invited_users": 0,
             "achievements_count": 0,
             "social_rating": 0,
-            "collective_id": None
+            "collective_id": None,
+            "start_collective_id": None,  # Стартовый коллектив добавим позже
         }
         user = User(**user_data)
         session.add(user)
@@ -40,9 +41,16 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
 
     # Если указан group_id, проверяем или обновляем привязку к коллективу
     collective = None
-    if group_id and (not user.collective_id or str(group_id) != str(user.collective_id)):
-        collective = await get_or_create_collective(session, group_id)
-        await update_user_collective(session, vk_id, collective.id)
+    if group_id:
+        if not user.collective_id or str(group_id) != str(user.collective_id):
+            collective = await get_or_create_collective(session, group_id)
+            await update_user_collective(session, vk_id, collective.id)
+
+        # Если у пользователя нет стартового коллектива, устанавливаем его
+        if not user.start_collective_id:
+            user.start_collective_id = group_id
+            session.add(user)
+            await session.commit()
 
     # Подготовка данных для возврата
     user_data = UserBase.model_validate(user)  # Используем UserBase для базовой информации о пользователе

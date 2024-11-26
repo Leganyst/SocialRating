@@ -1,7 +1,12 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Boolean, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Boolean, DateTime, Enum, Integer, String, ForeignKey
 from app.core.database import Base
+import enum
+
+class UserRoles(enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 class User(Base):
     __tablename__ = "users"
@@ -10,6 +15,7 @@ class User(Base):
     vk_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Уникальный VK ID пользователя
     username: Mapped[str] = mapped_column(String, nullable=True)  # Имя пользователя
     is_invited: Mapped[bool] = mapped_column(Boolean, default=False)  # Приглашен ли пользователь
+    role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), default=UserRoles.USER)  # Роль пользователя
     
     rice: Mapped[int] = mapped_column(Integer, default=0)  # Количество собранного риса
     social_rating: Mapped[int] = mapped_column(Integer, default=0)  # Рейтинг пользователя
@@ -28,8 +34,16 @@ class User(Base):
     # Привязка к коллективу
     collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)
     start_collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)
-    collective: Mapped["Collective"] = relationship("Collective", back_populates="members")
-
+    
+    collective: Mapped["Collective"] = relationship(
+        "Collective",
+        back_populates="members",
+        foreign_keys=[collective_id],  # Указываем внешний ключ для связи с коллективом
+    )
+    start_collective: Mapped["Collective"] = relationship(
+        "Collective",
+        foreign_keys=[start_collective_id],  # Указываем внешний ключ для стартового коллектива
+    )
 
     # Достижения пользователя
     user_achievements: Mapped[list["UserAchievement"]] = relationship("UserAchievement", back_populates="user")

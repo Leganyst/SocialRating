@@ -22,5 +22,9 @@ class Collective(Base):
     bonus: Mapped[str] = mapped_column(String, nullable=True)  # Бонусы текущего уровня
     group_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Идентификатор группы VK (обязательный)
 
-    # Связь с участниками
-    members: Mapped[list["User"]] = relationship("User", back_populates="collective")
+    # Указываем, какой внешний ключ использовать для связи с пользователями
+    members: Mapped[list["User"]] = relationship(
+        "User",
+        back_populates="collective",
+        foreign_keys="User.collective_id",  # Указываем, что связь с `members` идет через `collective_id`
+    )

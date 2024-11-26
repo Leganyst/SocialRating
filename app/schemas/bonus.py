@@ -16,9 +16,14 @@ class BonusBase(BaseModel):
         from_attributes = True
 
 
-class BonusCreate(BonusBase):
-    pass
-
+class BonusCreate(BaseModel):
+    name: str = Field(..., description="Название бонуса")
+    description: str = Field(..., description="Описание бонуса")
+    base_cost: int = Field(..., description="Начальная стоимость бонуса")
+    cost_modifier: float = Field(..., description="Модификатор удорожания бонуса")
+    max_level: Optional[int] = Field(None, description="Максимальный уровень бонуса")
+    effect: str = Field(..., description="Эффект, предоставляемый бонусом")
+    image: Optional[str] = Field(None, description="Ссылка на изображение")
 
 class BonusRead(BonusBase):
     pass

@@ -4,6 +4,8 @@ from sqlalchemy import Boolean, DateTime, Enum, Integer, String, ForeignKey
 from app.core.database import Base
 import enum
 
+from app.services.core_service import CoreType
+
 class UserRoles(enum.Enum):
     ADMIN = "admin"
     USER = "user"
@@ -23,10 +25,10 @@ class User(Base):
     invited_users: Mapped[int] = mapped_column(Integer, default=0)  # Приглашенные пользователи
     achievements_count: Mapped[int] = mapped_column(Integer, default=0)  # Количество достижений
     last_entry: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)  # Последний вход
-    current_core: Mapped[str] = mapped_column(String, nullable=True)  # Текущий стержень пользователя
+    current_core: Mapped[CoreType] = mapped_column(Enum(CoreType), nullable=True)  # Текущий стержень пользователя
     
     # Бонусы риса
-    autocollect_rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к австосбору риса (%)
+    autocollect_rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к австосбору риса (в единицах риса за час)
     autocollect_duration_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Длительность автосбора (в минутах)
     rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  #  Бонус к ручному сбору риса (%)
     invited_users_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к приглашенным пользователям (множитель)

@@ -36,3 +36,10 @@ class BonusUpdate(BaseModel):
     cost_modifier: Optional[float] = Field(None, description="Обновленный модификатор удорожания бонуса")
     max_level: Optional[int] = Field(None, description="Обновленный максимальный уровень бонуса")
     effect: Optional[str] = Field(None, description="Обновленный эффект бонуса")
+
+
+class UserBonusRead(BaseModel):
+    user_id: int = Field(..., description="Идентификатор пользователя, связанного с бонусом.")
+    bonus_id: int = Field(..., description="Идентификатор бонуса, который был приобретен.")
+    level: int = Field(..., description="Текущий уровень бонуса (количество покупок).")
+    total_cost: int = Field(..., description="Общая стоимость всех покупок данного бонуса.")

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.user import create_user, get_user, update_user, delete_user
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.core.database import get_db
 
 router = APIRouter(
@@ -28,7 +28,7 @@ async def get_user_endpoint(user_id: int, db: AsyncSession = Depends(get_db)):
     return user
 
 @router.put("/{user_id}", response_model=UserRead, summary="Обновить пользователя")
-async def update_user_endpoint(user_id: int, updates: UserCreate, db: AsyncSession = Depends(get_db)):
+async def update_user_endpoint(user_id: int, updates: UserUpdate, db: AsyncSession = Depends(get_db)):
     """
     Обновляет данные пользователя по его уникальному ID.
     """

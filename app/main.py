@@ -13,11 +13,12 @@ from app.routers.crud_endpoint_user import router as user_router
 from app.routers.clicker import router as clicker
 from app.routers.bonus import router as bonus_router
 from app.routers.achievement import router as achievement_router
+from app.routers.all_bonus import router as all_bonus_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     await engine.dispose()
@@ -58,3 +59,4 @@ app.include_router(achievement_router_crud)
 app.include_router(clicker)
 app.include_router(bonus_router)
 app.include_router(achievement_router)
+app.include_router(all_bonus_router)

@@ -48,7 +48,7 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
 
         # Если у пользователя нет стартового коллектива, устанавливаем его
         if not user.start_collective_id:
-            user.start_collective_id = group_id
+            user.start_collective_id = collective.id
             session.add(user)
             await session.commit()
 

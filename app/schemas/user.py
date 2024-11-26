@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -8,13 +9,22 @@ class UserBase(BaseModel):
     id: int = Field(..., description="Уникальный идентификатор пользователя")
     vk_id: str = Field(..., description="VK ID пользователя")
     username: Optional[str] = Field(None, description="Имя пользователя")
-    rice: int = Field(..., description="Количество собранного риса")
     role: UserRoles = Field(..., description="Роль пользователя")
-    clicks: int = Field(..., description="Количество кликов пользователя")
-    invited_users: int = Field(..., description="Количество приглашенных пользователей")
-    achievements_count: int = Field(..., description="Количество достижений пользователя")
-    social_rating: int = Field(..., description="Социальный рейтинг пользователя")
-    current_core: Optional[str] = Field(None, description="Название текущего стержня пользователя")
+    
+    rice: int = Field(..., description="Количество собранного риса нового пользователя")
+    social_rating: int = Field(..., description="Социальный рейтинг нового пользователя")
+    clicks: int = Field(..., description="Количество кликов нового пользователя")
+    invited_users: int = Field(..., description="Количество приглашенных пользователей нового пользователя")
+    achievements_count: int = Field(..., description="Количество достижений нового пользователя")
+    last_entry: Optional[datetime] = Field(None, description="Последний вход нового пользователя")
+    current_core: Optional[str] = Field(None, description="Название текущего стержня нового пользователя")
+      
+    autocollect_rice_bonus: int = Field(..., description="Бонус к автосбору риса нового пользователя в единицах риса за час")
+    autocollect_duration_bonus: int = Field(..., description="Длительность автосбора нового пользователя в минутах")
+    rice_bonus: int = Field(..., description="Бонус к ручному сбору риса нового пользователя в процентах")
+    invited_users_bonus: int = Field(..., description="Бонус к приглашенным пользователям нового пользователя в виде множителя")
+       
+   
     collective_id: Optional[int] = Field(None, description="ID коллектива, к которому принадлежит пользователь")
 
     class Config:
@@ -28,13 +38,18 @@ class UserRead(UserBase):
 class UserCreate(BaseModel):
     vk_id: str = Field(..., description="VK ID нового пользователя")
     username: Optional[str] = Field(None, description="Имя нового пользователя")
+    is_invited: bool = Field(..., description="Приглашен ли уже пользователь")
     role: UserRoles = Field(..., description="Роль нового пользователя")
+    
     rice: int = Field(..., description="Количество собранного риса нового пользователя")
+    social_rating: int = Field(..., description="Социальный рейтинг нового пользователя")
     clicks: int = Field(..., description="Количество кликов нового пользователя")
     invited_users: int = Field(..., description="Количество приглашенных пользователей нового пользователя")
     achievements_count: int = Field(..., description="Количество достижений нового пользователя")
-    social_rating: int = Field(..., description="Социальный рейтинг нового пользователя")
+    last_entry: Optional[datetime] = Field(None, description="Последний вход нового пользователя")
     current_core: Optional[str] = Field(None, description="Название текущего стержня нового пользователя")
+    
+
     collective_id: Optional[int] = Field(None, description="ID коллектива, к которому принадлежит новый пользователь")
 
 

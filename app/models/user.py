@@ -2,7 +2,10 @@ from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Boolean, DateTime, Enum, Integer, String, ForeignKey
 from app.core.database import Base
+from sqlalchemy.dialects.postgresql import JSON
 import enum
+
+from app.models.collective import CollectiveType
 
 
 class CoreType(enum.Enum):
@@ -65,7 +68,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, nullable=True)  # Имя пользователя
     is_invited: Mapped[bool] = mapped_column(Boolean, default=False)  # Приглашен ли пользователь
     role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), default=UserRoles.USER)  # Роль пользователя
-    
+    current_collective_type: Mapped[str] = mapped_column(String, nullable=True)
+
     rice: Mapped[int] = mapped_column(Integer, default=0)  # Количество собранного риса
     social_rating: Mapped[int] = mapped_column(Integer, default=0)  # Рейтинг пользователя
     clicks: Mapped[int] = mapped_column(Integer, default=0)  # Количество кликов
@@ -73,17 +77,23 @@ class User(Base):
     achievements_count: Mapped[int] = mapped_column(Integer, default=0)  # Количество достижений
     last_entry: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)  # Последний вход
     current_core: Mapped[CoreType] = mapped_column(Enum(CoreType), nullable=False, default=CoreType.COPPER)  # Текущий стержень пользователя
-    
+
     # Бонусы риса
     autocollect_rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к автосбору риса (в единицах риса за час)
     autocollect_duration_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Длительность автосбора (в минутах)
     rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  #  Бонус к ручному сбору риса (%)
     invited_users_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к приглашенным пользователям (множитель)
 
+    # Новое поле для хранения всех бонусов
+    # cumulative_bonuses: Mapped[dict] = mapped_column(JSON, default=dict)  # Хранение всех накопленных бонусов в формате JSON
+
     # Привязка к коллективу
     collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)
     start_collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)
-    
+    current_collective_type: Mapped[CollectiveType] = mapped_column(Enum(CollectiveType), nullable=True, default=None)
+    collective_rice_boost: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к сбору риса (%)
+    collective_autocollect_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к автосбору риса (в единицах)
+
     collective: Mapped["Collective"] = relationship(
         "Collective",
         back_populates="members",

@@ -1,6 +1,7 @@
+from app.models.collective import Collective
 from app.models.user import User
 from app.schemas.user import UserBase
-from app.schemas.collective import CollectiveBase
+from app.schemas.collective import CollectiveBase, CollectiveCreate
 from app.crud.user import get_user_by_vk_id, update_user_collective
 from app.services.collective_service import get_or_create_collective
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +16,7 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
     :param session: Асинхронная сессия SQLAlchemy.
     :param vk_id: VK ID пользователя.
     :param group_id: ID группы VK.
-    :return: Словарь с данными пользователя и коллектива (если применимо).
+    :return: Словарь с данными пользователя и объекта коллектива (если применимо).
     """
     # Пытаемся получить пользователя по VK ID
     result = await session.execute(select(User).where(User.vk_id == vk_id))
@@ -53,8 +54,8 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
             await session.commit()
             await session.refresh(user)
 
-    # Подготовка данных для возврата
-    user_data = UserBase.model_validate(user)  # Используем UserBase для базовой информации о пользователе
-    collective_data = CollectiveBase.model_validate(collective) if collective else None
+    # Получаем данные коллектива
+    if user.collective_id and not collective:
+        collective = await session.get(Collective, user.collective_id)
 
-    return {"user": user, "collective": collective_data}
+    return {"user": user, "collective": collective}

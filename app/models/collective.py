@@ -45,16 +45,6 @@ def collective_factory(collective_type: CollectiveType) -> dict:
     }
     return bonuses.get(collective_type, {})
 
-class CollectiveType(enum.Enum):
-    """Типы колхозов"""
-    INITIAL = "Начальный совхоз"
-    MEDIUM = "Средний совхоз"
-    LARGE = "Крупный совхоз"
-    GOLD = "Золотой совхоз"
-    DIAMOND = "Алмазный совхоз"
-    JADE = "Нефритовый совхоз"
-
-
 class Collective(Base):
     __tablename__ = "collectives"
 

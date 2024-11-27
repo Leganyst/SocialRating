@@ -43,19 +43,22 @@ async def update_user_core(session: AsyncSession, user: User, new_core_type: Cor
     return True
 
 
-def determine_new_core_type(social_rating: int) -> CoreType:
+def determine_new_core_type(social_rating: int, current_core: CoreType) -> CoreType:
     """
-    Определяет новый стержень на основе социального рейтинга пользователя.
+    Определяет, нужно ли обновить стержень на основе социального рейтинга пользователя.
+    Если текущий стержень устарел, возвращает новый уровень. Если нет, возвращает текущий.
 
     :param social_rating: Текущий социальный рейтинг пользователя.
+    :param current_core: Текущий уровень стержня пользователя.
     :return: Тип стержня (CoreType).
     """
     all_cores = get_all_cores()
 
-    # Ищем подходящий стержень
     for core in reversed(all_cores):  # Начинаем с самого высокого стержня
         if social_rating >= core.required_rating:
-            return core.type
+            if core.type != current_core:
+                return core.type  # Возвращаем новый уровень, если он выше текущего
+            return current_core  # Возвращаем текущий, если он актуален
 
-    # Если рейтинг слишком низкий, возвращаем самый базовый стержень
+    # Если рейтинг слишком низкий, остаёмся на базовом уровне
     return CoreType.COPPER

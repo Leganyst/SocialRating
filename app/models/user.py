@@ -92,7 +92,7 @@ class User(Base):
     start_collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)
     current_collective_type: Mapped[CollectiveType] = mapped_column(Enum(CollectiveType), nullable=True, default=None)
     collective_rice_boost: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к сбору риса (%)
-    collective_autocollect_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к автосбору риса (в единицах)
+    collective_autocollect_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к автосбору риса (в единицах риса за час)
 
     collective: Mapped["Collective"] = relationship(
         "Collective",

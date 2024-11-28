@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from app.models.collective import CollectiveType
 from app.models.user import UserRoles
 
 
@@ -26,6 +27,10 @@ class UserBase(BaseModel):
        
    
     collective_id: Optional[int] = Field(None, description="ID коллектива, к которому принадлежит пользователь")
+    start_collective_id: Optional[int] = Field(None, description="ID стартового коллектива пользователя")
+    current_collective_type: Optional[CollectiveType] = Field(None, description="Текущий тип коллектива пользователя")
+    collective_rice_boost: int = Field(..., description="Бонус к сбору риса пользователя в процентах")
+    collective_autocollect_bonus: int = Field(..., description="Бонус к автосбору риса пользователя в единицах риса за час")
 
     class Config:
         from_attributes = True

@@ -6,12 +6,15 @@ from app.crud.user import update_user_rice, update_user_rice_and_rating
 from app.crud.collective import update_collective_rating
 from app.models.collective import Collective
 from app.schemas.user import UserBase
+from app.core.logger import logger
 from sqlalchemy import select
+
 
 router = APIRouter(
     prefix="/clicker",
     tags=["Clicker"],
 )
+
 
 @router.post(
     "/",
@@ -46,23 +49,52 @@ async def clicker_update(
     session: AsyncSession = Depends(get_db),
 ):
     """
-    Обновляет количество риса у пользователя через кликер.
+    Обновляет количество риса у пользователя через кликер с учётом бонусов.
     """
+    logger.info(f"Пользователь {user.vk_id} начал процесс добавления риса через кликер. Заявленное количество: {earned_rice}.")
+
     # Проверяем лимит риса за один запрос
     if earned_rice > 100:
+        logger.warning(f"Пользователь {user.vk_id} превысил лимит добавления риса. Запрос: {earned_rice} риса.")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Количество риса превышает допустимый лимит."
         )
 
+    # Учитываем бонусы пользователя
+    personal_bonus = user.rice_bonus / 100  # Преобразуем в множитель
+    collective_bonus = user.collective_rice_boost / 100  # Преобразуем в множитель
+    total_bonus = 1 + personal_bonus + collective_bonus
+
+    logger.info(
+        f"Бонусы пользователя {user.vk_id}:\n"
+        f"- Личный бонус: {personal_bonus * 100}%\n"
+        f"- Бонус от совхоза: {collective_bonus * 100}%\n"
+        f"- Итоговый множитель: {total_bonus:.2f}"
+    )
+
+    # Рассчитываем итоговое количество добавляемого риса
+    total_rice_added = int(earned_rice * total_bonus)
+    logger.info(f"Пользователь {user.vk_id} заработал {total_rice_added} риса с учётом бонусов.")
+
     # Обновляем количество риса
-    updated_user = await update_user_rice(session, user.id, earned_rice)
+    updated_user = await update_user_rice(session, user.id, total_rice_added)
+
+    logger.info(
+        f"Количество риса у пользователя {user.vk_id} успешно обновлено. "
+        f"Добавлено риса: {total_rice_added}, всего риса: {updated_user.rice}."
+    )
+
+    # Метрики для мониторинга (например, Prometheus)
+    # Пример кода для интеграции с метриками
+    # metrics.rice_collected_total.labels(user_id=user.vk_id).inc(total_rice_added)
 
     return {
         "status": "success",
-        "added_rice": earned_rice,
+        "added_rice": total_rice_added,
         "total_rice": updated_user.rice
     }
+
 
 
 @router.post(

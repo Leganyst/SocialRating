@@ -57,8 +57,8 @@ def get_all_cores() -> list[Core]:
     ]
 
 class UserRoles(enum.Enum):
-    ADMIN = "admin"
-    USER = "user"
+    admin = "admin"
+    user = "user"
 
 class User(Base):
     __tablename__ = "users"
@@ -67,7 +67,7 @@ class User(Base):
     vk_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Уникальный VK ID пользователя
     username: Mapped[str] = mapped_column(String, nullable=True)  # Имя пользователя
     is_invited: Mapped[bool] = mapped_column(Boolean, default=False)  # Приглашен ли пользователь
-    role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), default=UserRoles.USER)  # Роль пользователя
+    role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), default=UserRoles.user)  # Роль пользователя
     current_collective_type: Mapped[str] = mapped_column(String, nullable=True)
 
     rice: Mapped[int] = mapped_column(Integer, default=0)  # Количество собранного риса
@@ -75,7 +75,7 @@ class User(Base):
     clicks: Mapped[int] = mapped_column(Integer, default=0)  # Количество кликов
     invited_users: Mapped[int] = mapped_column(Integer, default=0)  # Приглашенные пользователи
     achievements_count: Mapped[int] = mapped_column(Integer, default=0)  # Количество достижений
-    last_entry: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)  # Последний вход
+    last_entry: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now)  # Последний вход
     current_core: Mapped[CoreType] = mapped_column(Enum(CoreType), nullable=False, default=CoreType.COPPER)  # Текущий стержень пользователя
 
     # Бонусы риса

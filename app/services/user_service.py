@@ -1,59 +1,74 @@
 from app.models.collective import Collective
-from app.models.user import User
-from app.schemas.user import UserBase
+from app.models.user import CoreType, User, UserRoles
+from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
 from app.schemas.collective import CollectiveBase, CollectiveCreate
-from app.crud.user import get_user_by_vk_id, update_user_collective
+from app.crud.user import create_user, get_user_by_vk_id, update_user, update_user_collective
 from app.services.collective_service import get_or_create_collective
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Optional
+from typing import Optional, Union
 from app.core.logger import logger
 from datetime import datetime, timezone
 
+from app.services.other import serialize_orm_object
 
-async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Optional[int] = None) -> dict:
+
+async def create_or_update_user(
+    session: AsyncSession, vk_id: str, group_id: Optional[int] = None
+) -> dict:
     """
-    Создает нового пользователя или обновляет его привязку к группе.
-    
+    Создаёт нового пользователя или обновляет существующего. Обрабатывает привязку к коллективу.
+
     :param session: Асинхронная сессия SQLAlchemy.
     :param vk_id: VK ID пользователя.
-    :param group_id: ID группы VK.
-    :return: Словарь с данными пользователя и объекта коллектива (если применимо).
+    :param group_id: ID группы VK (если передан).
+    :return: Словарь с объектами пользователя и коллектива (если применимо).
     """
-    # Пытаемся получить пользователя по VK ID
+    # Получаем пользователя по VK ID
     result = await session.execute(select(User).where(User.vk_id == vk_id))
     user = result.scalar_one_or_none()
 
-    # Если пользователь не существует, создаем нового
     if not user:
-        user_data = {
-            "vk_id": vk_id,
-            "username": None,
-            "rice": 0,
-            "clicks": 0,
-            "invited_users": 0,
-            "achievements_count": 0,
-            "social_rating": 0,
-            "collective_id": None,
-            "start_collective_id": None,  # Стартовый коллектив добавим позже
-        }
-        user = User(**user_data)
+        # Создаём нового пользователя
+        user = User(
+            vk_id=vk_id,
+            is_invited=False,
+            role=UserRoles.user,
+            rice=0,
+            social_rating=0,
+            clicks=0,
+            invited_users=0,
+            achievements_count=0,
+            last_entry=datetime.now(timezone.utc),
+            current_core=CoreType.COPPER,
+            autocollect_rice_bonus=0,
+            autocollect_duration_bonus=0,
+            rice_bonus=0,
+            invited_users_bonus=0,
+            current_collective_type=None,
+            collective_rice_boost=0,
+            collective_autocollect_bonus=0,
+            collective_id=None,
+            start_collective_id=None,
+        )
         session.add(user)
         await session.commit()
         await session.refresh(user)
 
-    # Если указан group_id, проверяем или обновляем привязку к коллективу
-    collective = None
+    # Привязка к коллективу, если передан group_id
+    collective = await session.execute(select(Collective).where(Collective.id == user.collective_id))
+    collective = collective.scalar_one_or_none()
     if group_id:
-        if not user.collective_id or str(group_id) != str(user.collective_id):
-            # Вычитаем рейтинг из старого коллектива
+        if not user.collective_id or str(group_id) != str(collective.group_id):
+            # Вычитаем рейтинг из старого коллектива (если был)
             if user.collective_id:
-                await subtract_user_rating_from_collective(session, user)
+                old_collective = await session.get(Collective, user.collective_id)
+                if old_collective:
+                    await subtract_user_rating_from_collective(session, user)
 
             # Создаем или получаем новый коллектив
             collective = await get_or_create_collective(session, group_id)
             user.collective_id = collective.id
-
             # Добавляем рейтинг к новому коллективу
             await add_user_rating_to_collective(session, user, collective)
 
@@ -65,7 +80,7 @@ async def create_or_update_user(session: AsyncSession, vk_id: str, group_id: Opt
         await session.commit()
         await session.refresh(user)
 
-    # Получаем данные текущего коллектива
+    # Получаем данные текущего коллектива, если он уже есть
     if user.collective_id and not collective:
         collective = await session.get(Collective, user.collective_id)
 
@@ -94,19 +109,23 @@ async def subtract_user_rating_from_collective(session: AsyncSession, user: User
 async def add_user_rating_to_collective(session: AsyncSession, user: User, collective: Collective):
     """
     Увеличивает социальный рейтинг указанного коллектива на величину рейтинга пользователя.
-    
+
     :param session: Асинхронная сессия SQLAlchemy.
-    :param user: Объект пользователя.
-    :param collective: Объект коллектива.
+    :param user: Объект пользователя (ORM).
+    :param collective: Объект коллектива (ORM).
     """
+    if not isinstance(collective, Collective):
+        raise TypeError("Передан объект, не являющийся ORM-классом Collective")
+
     collective.social_rating += user.social_rating
     session.add(collective)
     await session.commit()
+
     logger.info(
         f"Увеличен социальный рейтинг коллектива '{collective.name}' (ID: {collective.id}). "
         f"Новое значение: {collective.social_rating}."
     )
-    
+
     
 async def get_user_data(session: AsyncSession, user_id: int) -> dict:
     """
@@ -131,3 +150,24 @@ async def get_user_data(session: AsyncSession, user_id: int) -> dict:
 
     return user_data
 
+
+async def calculate_afk_rice(user: User, last_entry: datetime, current_time: datetime) -> int:
+    """
+    Рассчитывает количество риса, заработанного в афк-режиме.
+    """
+    # Приведение времени к timezone-aware
+    if last_entry.tzinfo is None:
+        last_entry = last_entry.replace(tzinfo=timezone.utc)
+
+    if current_time.tzinfo is None:
+        current_time = current_time.replace(tzinfo=timezone.utc)
+
+    # Рассчитываем прошедшие секунды
+    elapsed_seconds = (current_time - last_entry).total_seconds()
+
+    # Рис, собираемый в секунду
+    rice_per_second = user.autocollect_rice_bonus / 3600
+
+    # Вычисляем афк-рис
+    afk_rice = int(elapsed_seconds * rice_per_second)
+    return max(0, afk_rice)

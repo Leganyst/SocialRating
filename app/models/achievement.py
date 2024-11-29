@@ -35,7 +35,7 @@ class UserAchievement(Base):
     achievement_id: Mapped[int] = mapped_column(ForeignKey("achievements.id"), nullable=False)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)  # Завершено ли достижение
     progress: Mapped[int] = mapped_column(Integer, default=0)  # Текущий прогресс
-    last_updated: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))  # Последнее обновление
+    last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))  # Последнее обновление
 
     user: Mapped["User"] = relationship("User", back_populates="user_achievements")
     achievement: Mapped["Achievement"] = relationship("Achievement", back_populates="user_achievements")

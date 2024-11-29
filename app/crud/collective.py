@@ -19,7 +19,7 @@ async def create_collective(session: AsyncSession, collective_data: CollectiveCr
     await session.refresh(new_collective)
 
     # Возвращаем только данные самого коллектива
-    return CollectiveRead.model_validate(new_collective)
+    return new_collective
 
 
 async def get_collective(session: AsyncSession, collective_id: int) -> Optional[CollectiveRead]:

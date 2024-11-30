@@ -7,12 +7,11 @@ from app.schemas.user import UserBase, UserRead
 from app.schemas.collective import CollectiveBase
 
 router = APIRouter(
-    prefix="/auth",
     tags=["Authentication"],
 )
 
 @router.get(
-    "/",
+    "/auth",
     summary="Аутентификация и проверка пользователя и коллектива",
     description="""
         Выполняет аутентификацию пользователя и привязку к коллективу.

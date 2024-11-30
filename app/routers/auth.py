@@ -70,11 +70,6 @@ router = APIRouter(
         },
     },
 )
-@router.get(
-    "/",
-    summary="Аутентификация и проверка пользователя и коллектива",
-    response_model=dict
-)
 async def authenticate_user(
     query_params: dict = Depends(get_query_params),
     session: AsyncSession = Depends(get_db),

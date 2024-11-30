@@ -25,21 +25,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
-origins = [
-    "https://*.vercel.app",
-    "https://*.wormhole.vk-apps.com",
-    "https://*.pages.vk-apps.com",
-    "https://*.pages-ac.vk-apps.com",
-    "https://pages-ac.vk-apps.com"
-]
+# origins = [
+#     "https://*.vercel.app",
+#     "https://*.wormhole.vk-apps.com",
+#     "https://*.pages.vk-apps.com",
+#     "https://*.pages-ac.vk-apps.com",
+#     "https://pages-ac.vk-apps.com"
+# ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
+#     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+# )
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html_github():

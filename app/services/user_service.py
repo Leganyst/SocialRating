@@ -153,7 +153,12 @@ async def get_user_data(session: AsyncSession, user_id: int) -> dict:
 
 async def calculate_afk_rice(user: User, last_entry: datetime, current_time: datetime) -> int:
     """
-    Рассчитывает количество риса, заработанного в афк-режиме.
+    Рассчитывает количество риса, заработанного в афк-режиме с учетом максимальной длительности автосбора.
+
+    :param user: Объект пользователя.
+    :param last_entry: Время последнего захода пользователя.
+    :param current_time: Текущее время.
+    :return: Количество заработанного риса.
     """
     # Приведение времени к timezone-aware
     if last_entry.tzinfo is None:
@@ -162,12 +167,35 @@ async def calculate_afk_rice(user: User, last_entry: datetime, current_time: dat
     if current_time.tzinfo is None:
         current_time = current_time.replace(tzinfo=timezone.utc)
 
-    # Рассчитываем прошедшие секунды
+    # Рассчитываем прошедшее время в секундах
     elapsed_seconds = (current_time - last_entry).total_seconds()
+
+    # Максимальное время в секундах, на которое распространяется автосбор
+    max_afk_seconds = user.autocollect_duration_bonus * 60
+
+    # Ограничиваем время сбора риса максимумом
+    effective_seconds = min(elapsed_seconds, max_afk_seconds)
 
     # Рис, собираемый в секунду
     rice_per_second = user.autocollect_rice_bonus / 3600
 
     # Вычисляем афк-рис
-    afk_rice = int(elapsed_seconds * rice_per_second)
+    afk_rice = int(effective_seconds * rice_per_second)
+    
+    # Логируем данные для анализа
+    logger.info(
+        f"\n----- АФК РИС РАСЧЁТ -----\n"
+        f"Пользователь ID: {user.id}, VK ID: {user.vk_id}\n"
+        f"Прошло времени с последнего входа: {elapsed_seconds:.2f} сек "
+        f"({elapsed_seconds / 60:.2f} мин / {elapsed_seconds / 3600:.2f} час).\n"
+        f"Максимальное время фарма: {max_afk_seconds:.2f} сек "
+        f"({max_afk_seconds / 60:.2f} мин / {max_afk_seconds / 3600:.2f} час).\n"
+        f"Учтено времени для расчёта: {effective_seconds:.2f} сек "
+        f"({effective_seconds / 60:.2f} мин / {effective_seconds / 3600:.2f} час).\n"
+        f"Автосбор в рис/час: {user.autocollect_rice_bonus}, "
+        f"что составляет {rice_per_second:.5f} рис/сек.\n"
+        f"Заработано афк-рисов: {afk_rice}.\n"
+        f"----- КОНЕЦ РАСЧЁТА -----"
+    )
+
     return max(0, afk_rice)

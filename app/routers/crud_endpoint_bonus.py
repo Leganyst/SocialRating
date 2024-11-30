@@ -69,16 +69,16 @@ async def get_user_bonuses_endpoint(user: UserBase = Depends(get_user_depend), d
     bonuses = await get_user_bonuses(db, user_id=user.id)
     return [BonusRead.model_validate(bonus.bonus) for bonus in bonuses]
 
-# **6. Добавление или улучшение бонуса пользователя**
-@router.post("/user/{bonus_id}", response_model=dict, summary="Добавить или улучшить бонус пользователя")
-async def add_or_upgrade_bonus_endpoint(bonus_id: int, user: UserBase = Depends(get_user_depend), db: AsyncSession = Depends(get_db)):
-    """
-    Добавляет новый бонус пользователю или улучшает существующий бонус.
-    """
-    user_bonus = await add_or_upgrade_user_bonus(db, user_id=user.id, bonus_id=bonus_id)
-    return {
-        "message": "Bonus added or upgraded successfully",
-        "bonus_id": user_bonus.bonus_id,
-        "new_level": user_bonus.level,
-        "total_cost": user_bonus.total_cost,
-    }
+# # **6. Добавление или улучшение бонуса пользователя**
+# @router.post("/user/{bonus_id}", response_model=dict, summary="Добавить или улучшить бонус пользователя")
+# async def add_or_upgrade_bonus_endpoint(bonus_id: int, user: UserBase = Depends(get_user_depend), db: AsyncSession = Depends(get_db)):
+#     """
+#     Добавляет новый бонус пользователю или улучшает существующий бонус.
+#     """
+#     user_bonus = await add_or_upgrade_user_bonus(db, user_id=user.id, bonus_id=bonus_id)
+#     return {
+#         "message": "Bonus added or upgraded successfully",
+#         "bonus_id": user_bonus.bonus_id,
+#         "new_level": user_bonus.level,
+#         "total_cost": user_bonus.total_cost,
+#     }

@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.routers.dependencies.auth import get_user_depend
-from app.crud.achievement import get_achievement, can_assign_achievement, add_user_achievement, get_all_achievements, get_user_achievements
+from app.crud.achievement import get_achievement, can_assign_achievement, get_all_achievements, get_user_achievements
 from app.models.user import User
 from app.schemas.achievement import AchievementRead, UserAchievementRead
 from app.schemas.user import UserRead
 from app.core.logger import logger
+from app.services.achievement_service import add_user_achievement
 
 router = APIRouter(
     tags=["Achievements"],

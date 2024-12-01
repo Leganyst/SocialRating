@@ -125,32 +125,6 @@ async def can_assign_achievement(session: AsyncSession, user_id: int, achievemen
     return True
 
 
-async def add_user_achievement(session: AsyncSession, user_id: int, achievement_id: int) -> UserAchievement:
-    """
-    Добавить достижение пользователю или обновить его прогресс.
-    """
-    user_achievement = await get_user_achievement(session, user_id, achievement_id)
-
-    if user_achievement:
-        # Если достижение уже существует, обновляем время и прогресс
-        user_achievement.last_updated = datetime.utcnow()
-        user_achievement.progress += 1
-    else:
-        # Создаем новое достижение
-        user_achievement = UserAchievement(
-            user_id=user_id,
-            achievement_id=achievement_id,
-            last_updated=datetime.utcnow(),
-            is_completed=True
-        )
-        session.add(user_achievement)
-
-    await session.commit()
-    await session.refresh(user_achievement)
-
-    return user_achievement
-
-
 async def get_all_achievements(session: AsyncSession) -> list[Achievement]:
     """
     Возвращает список всех доступных достижений.

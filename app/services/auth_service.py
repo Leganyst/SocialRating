@@ -41,8 +41,8 @@ async def handle_authentication(session: AsyncSession, vk_id: str, group_id: Opt
     # Применение бонусов и обновление уровня коллектива (если коллектив есть)
     collective_data = {}
     if collective:
-        await apply_collective_bonuses(session, user, collective)
         await update_collective_type(session, collective)
+        await apply_collective_bonuses(session, user, collective)
         collective_data = await serialize_orm_object(collective, CollectiveRead)
 
     # Сериализация данных пользователя

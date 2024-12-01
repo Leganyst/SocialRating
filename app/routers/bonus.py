@@ -23,7 +23,7 @@ async def purchase_bonus_endpoint(
     Покупка бонуса пользователем.
     """
     try:
-        user_bonus = await purchase_bonus(db, user_id=user.user_id, bonus_id=bonus_id)
+        user_bonus = await purchase_bonus(db, user_id=user.id, bonus_id=bonus_id)
         return user_bonus
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

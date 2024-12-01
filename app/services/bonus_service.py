@@ -4,36 +4,102 @@ from app.models.bonus import PurchasableBonus, UserBonus
 from app.models.user import User
 from app.schemas.bonus import UserBonusRead
 from app.core.logger import logger
+import re
+
+
+def normalize_effect(effect: str) -> dict:
+    """
+    Нормализует эффекты бонусов с учётом вариаций слов.
+
+    :param effect: Строка с описанием эффектов.
+    :return: Словарь с распознанными эффектами.
+    """
+    # Определяем шаблоны для различных эффектов
+    patterns = {
+        "autocollect_duration_bonus": r"(врем(я|ени|ем|ям|ям)|длительн.*)\s*автосбора",
+        "autocollect_rice_bonus": r"(объ(е|ё)м(у|а|ов|ом)?|автосбор.*рис)",
+        "rice_bonus": r"сбор(у|а)?\s*рис",
+        "invited_users_bonus": r"привлеч.*\s*друз",
+    }
+
+    # Ищем совпадения
+    parsed_effects = {}
+    for key, pattern in patterns.items():
+        match = re.search(pattern, effect, re.IGNORECASE)
+        if match:
+            parsed_effects[key] = match.group(0)
+
+    return parsed_effects
 
 
 async def apply_bonus_to_user(session: AsyncSession, user: User, bonus: PurchasableBonus, level: int) -> None:
     """
-    Применяет эффект бонуса к пользователю.
+    Применяет эффекты бонуса к пользователю.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user: ORM-объект пользователя.
+    :param bonus: ORM-объект бонуса.
+    :param level: Уровень бонуса.
     """
-    effect = bonus.effect.lower()
+    effects = bonus.effect.lower().split(",")  # Разделяем эффекты по запятой
+    changes = {
+        "autocollect_duration_bonus": 0,
+        "autocollect_rice_bonus": 0,
+        "rice_bonus": 0,
+        "invited_users_bonus": 0,
+    }
 
-    if "автосбор" in effect:
-        if "время" in effect:
-            percentage = int(effect.split("%")[0])
-            user.autocollect_duration_bonus += percentage * level
-        elif "объём" in effect:
-            percentage = int(effect.split("%")[0])
-            user.autocollect_rice_bonus += percentage * level
+    for effect in effects:
+        effect = effect.strip()
+        normalized_effect = normalize_effect(effect)
 
-    if "сбору рис" in effect:
-        percentage = int(effect.split("%")[0])
-        user.rice_bonus += percentage * level
+        for key, value in normalized_effect.items():
+            if "%" in effect:
+                percentage = int(re.search(r"(\d+)%", effect).group(1))
+                increment = (getattr(user, key) * percentage // 100) + (percentage * level)
+                changes[key] += increment
+                setattr(user, key, getattr(user, key) + increment)
+            elif "x" in effect:
+                multiplier = int(re.search(r"x(\d+)", effect).group(1))
+                increment = multiplier * level
+                changes[key] += increment
+                setattr(user, key, getattr(user, key) + increment)
+            elif re.search(r"\d+", effect):  # Прямое число, например "500 рис в час"
+                amount = int(re.search(r"(\d+)", effect).group(1))
+                increment = amount * level
+                changes[key] += increment
+                setattr(user, key, getattr(user, key) + increment)
 
-    if "привлечение друга" in effect:
-        multiplier = int(effect.split("x")[1])
-        user.invited_users_bonus += multiplier * level
-
+    # Сохраняем изменения
+    session.add(user)
     await session.commit()
+
+    # Логирование изменений
+    logger.info(
+        f"Применён бонус '{bonus.name}' (уровень {level}) к пользователю (ID: {user.id}):\n"
+        f"- Время автосбора: +{changes['autocollect_duration_bonus']} мин (в минутах) "
+        f"(было: {user.autocollect_duration_bonus - changes['autocollect_duration_bonus']} мин, "
+        f"стало: {user.autocollect_duration_bonus} мин).\n"
+        f"- Объём автосбора: +{changes['autocollect_rice_bonus']} рис/час (в абсолютных единицах) "
+        f"(было: {user.autocollect_rice_bonus - changes['autocollect_rice_bonus']} рис/час, "
+        f"стало: {user.autocollect_rice_bonus} рис/час).\n"
+        f"- Ручной сбор риса: +{changes['rice_bonus']}% (в процентах) "
+        f"(было: {user.rice_bonus - changes['rice_bonus']}%, "
+        f"стало: {user.rice_bonus}%).\n"
+        f"- Бонус за привлечение друга: +{changes['invited_users_bonus']}x (в коэффициентах) "
+        f"(было: {user.invited_users_bonus - changes['invited_users_bonus']}x, "
+        f"стало: {user.invited_users_bonus}x).\n"
+        f"Итоговые значения для пользователя (ID: {user.id}):\n"
+        f"- Время автосбора: {user.autocollect_duration_bonus} мин.\n"
+        f"- Объём автосбора: {user.autocollect_rice_bonus} рис/час.\n"
+        f"- Ручной сбор риса: {user.rice_bonus}%.\n"
+        f"- Привлечение друзей: {user.invited_users_bonus}x."
+    )
 
 
 async def purchase_bonus(session: AsyncSession, user_id: int, bonus_id: int) -> UserBonusRead:
     """
-    Покупка бонуса пользователем с учётом особенностей бонуса "Тяпка".
+    Покупка бонуса пользователем с обработкой эффектов.
 
     :param session: Асинхронная сессия SQLAlchemy.
     :param user_id: Идентификатор пользователя.
@@ -82,25 +148,10 @@ async def purchase_bonus(session: AsyncSession, user_id: int, bonus_id: int) -> 
     user.rice -= total_cost
     logger.info(f"Списано {total_cost} риса с пользователя (ID: {user.id}). Остаток риса: {user.rice}.")
 
-    # Если бонус "Тяпка"
-    if bonus.name == "Огородный Тяпка":
-        logger.info("Обработка бонуса 'Огородный Тяпка'.")
-        if not user_bonus:
-            user.autocollect_duration_bonus += 60  # 60 минут
-            user.autocollect_rice_bonus += 200  # 200 рис в час
-            logger.info(
-                f"Первое приобретение бонуса 'Огородный Тяпка': "
-                f"длительность автосбора увеличена на 60 минут, сбор риса увеличен на 200 рис/час."
-            )
-        else:
-            user.autocollect_duration_bonus += 10  # 10 минут
-            logger.info(
-                f"Повышение уровня бонуса 'Огородный Тяпка': длительность автосбора увеличена на 10 минут."
-            )
-    else:
-        logger.info(f"Обработка стандартного бонуса: {bonus.name}.")
+    # Применение бонуса к пользователю
+    await apply_bonus_to_user(session, user, bonus, level)
 
-    # Обновляем или добавляем бонус
+    # Обновляем или добавляем запись о бонусе
     if not user_bonus:
         user_bonus = UserBonus(
             user_id=user_id,
@@ -116,9 +167,9 @@ async def purchase_bonus(session: AsyncSession, user_id: int, bonus_id: int) -> 
         logger.info(f"Обновлён бонус '{bonus.name}' для пользователя с ID {user_id}.")
 
     # Сохраняем изменения
-    session.add(user)
     await session.commit()
     await session.refresh(user_bonus)
+
     logger.info(
         f"Бонус успешно сохранён для пользователя с ID {user_id}: "
         f"уровень {user_bonus.level}, общая стоимость {user_bonus.total_cost}."

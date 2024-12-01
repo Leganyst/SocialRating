@@ -43,3 +43,8 @@ class UserBonusRead(BaseModel):
     bonus_id: int = Field(..., description="Идентификатор бонуса, который был приобретен.")
     level: int = Field(..., description="Текущий уровень бонуса (количество покупок).")
     total_cost: int = Field(..., description="Общая стоимость всех покупок данного бонуса.")
+    
+    
+class UserBonusWithLevelRead(BaseModel):
+    bonus: BonusRead  # Данные о самом бонусе
+    level: int        # Уровень бонуса у пользователя

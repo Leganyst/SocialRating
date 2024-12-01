@@ -8,16 +8,43 @@ from app.crud.bonus import (
     get_user_bonuses,
     add_or_upgrade_user_bonus,
 )
-from app.schemas.bonus import BonusCreate, BonusRead, BonusUpdate
+from app.models.bonus import UserBonus
+from app.schemas.bonus import BonusCreate, BonusRead, BonusUpdate, UserBonusWithLevelRead
 from app.core.database import get_db
 from app.routers.dependencies.auth import get_user_depend
 from app.schemas.user import UserBase
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 router = APIRouter(
     prefix="/bonuses",
     tags=["Bonuses"],
     responses={404: {"description": "Bonus not found"}},
 )
+
+
+@router.get("/user", response_model=list[UserBonusWithLevelRead], summary="Получить бонусы пользователя")
+async def get_user_bonuses_endpoint(user: UserBase = Depends(get_user_depend), db: AsyncSession = Depends(get_db)):
+    """
+    Возвращает список бонусов, которыми обладает пользователь, включая их текущий уровень.
+    """
+    # Загружаем бонусы пользователя с уровнями
+    bonuses = await db.execute(
+        select(UserBonus).where(UserBonus.user_id == user.id).options(selectinload(UserBonus.bonus))
+    )
+    bonuses = bonuses.scalars().all()
+
+    # Формируем список объектов с уровнем и данными бонуса
+    bonus_list = [
+        UserBonusWithLevelRead(
+            bonus=BonusRead.model_validate(bonus.bonus),
+            level=bonus.level
+        )
+        for bonus in bonuses if bonus.bonus is not None
+    ]
+
+    return bonus_list
+
 
 # **1. Создание нового покупаемого бонуса**
 @router.post("/", response_model=BonusRead, summary="Создать покупаемый бонус")
@@ -60,14 +87,6 @@ async def delete_bonus_endpoint(bonus_id: int, db: AsyncSession = Depends(get_db
         raise HTTPException(status_code=404, detail="Bonus not found")
     return {"message": "Bonus deleted successfully"}
 
-# **5. Получение всех бонусов пользователя**
-@router.get("/user", response_model=list[BonusRead], summary="Получить бонусы пользователя")
-async def get_user_bonuses_endpoint(user: UserBase = Depends(get_user_depend), db: AsyncSession = Depends(get_db)):
-    """
-    Возвращает список бонусов, которыми обладает пользователь.
-    """
-    bonuses = await get_user_bonuses(db, user_id=user.id)
-    return [BonusRead.model_validate(bonus.bonus) for bonus in bonuses]
 
 # # **6. Добавление или улучшение бонуса пользователя**
 # @router.post("/user/{bonus_id}", response_model=dict, summary="Добавить или улучшить бонус пользователя")

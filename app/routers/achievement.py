@@ -2,18 +2,50 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.routers.dependencies.auth import get_user_depend
-from app.crud.achievement import get_achievement, can_assign_achievement, add_user_achievement, get_all_achievements
+from app.crud.achievement import get_achievement, can_assign_achievement, add_user_achievement, get_all_achievements, get_user_achievements
 from app.models.user import User
-from app.schemas.achievement import AchievementRead
+from app.schemas.achievement import AchievementRead, UserAchievementRead
+from app.schemas.user import UserRead
+from app.core.logger import logger
 
 router = APIRouter(
-    prefix="/achievements",
     tags=["Achievements"],
 )
 
 
+@router.get("/achievements/user", response_model=list[UserAchievementRead], summary="Получить достижения пользователя")
+async def get_user_achievements_endpoint(
+    user: UserRead = Depends(get_user_depend),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Возвращает список достижений, которыми обладает пользователь.
+    """
+    try:
+        # Получаем достижения пользователя
+        achievements = await get_user_achievements(db, user_id=user.id)
+        if not achievements:
+            return []
+
+        # Преобразуем их в формат Pydantic
+        return [
+            UserAchievementRead(
+                achievement=AchievementRead.model_validate(ach.achievement),
+                progress=ach.progress,
+                is_completed=ach.is_completed,
+                last_updated=ach.last_updated,
+            )
+            for ach in achievements if ach.achievement is not None
+        ]
+    except Exception as e:
+        logger.error(f"Ошибка при получении достижений пользователя: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Произошла ошибка при обработке запроса.",
+        )
+
 @router.get(
-    "/",
+    "/achievements/",
     summary="Получить список всех достижений",
     description="Возвращает список всех доступных достижений в системе.",
     response_model=list[AchievementRead],
@@ -29,7 +61,7 @@ async def get_all_achievements_endpoint(session: AsyncSession = Depends(get_db))
 
 
 @router.post(
-    "/assign/{achievement_id}",
+    "/achievements/assign/{achievement_id}",
     summary="Начислить достижение пользователю",
     description="""
         Начисляет достижение пользователю.
@@ -64,7 +96,3 @@ async def assign_achievement(
         "achievement_name": achievement.name,
         "achievement_type": achievement.type.value,
     }
-
-
-
-

@@ -5,7 +5,7 @@ from app.schemas.achievement import AchievementCreate, AchievementRead
 from app.core.database import get_db
 
 router = APIRouter(
-    prefix="/achievements",
+    prefix="/achievements/crud",
     tags=["Achievements"],
     responses={404: {"description": "Achievement not found"}},
 )

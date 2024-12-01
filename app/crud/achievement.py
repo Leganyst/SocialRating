@@ -5,6 +5,7 @@ from sqlalchemy.orm import load_only
 from app.models.achievement import Achievement, AchievementType, UserAchievement
 from app.schemas.achievement import AchievementCreate, AchievementRead, AchievementUpdate
 from typing import Optional
+from sqlalchemy.orm import selectinload
 
 
 async def create_achievement(session: AsyncSession, achievement_data: AchievementCreate) -> AchievementRead:
@@ -140,6 +141,7 @@ async def add_user_achievement(session: AsyncSession, user_id: int, achievement_
             user_id=user_id,
             achievement_id=achievement_id,
             last_updated=datetime.utcnow(),
+            is_completed=True
         )
         session.add(user_achievement)
 
@@ -157,4 +159,20 @@ async def get_all_achievements(session: AsyncSession) -> list[Achievement]:
     :return: Список достижений.
     """
     result = await session.execute(select(Achievement))
+    return result.scalars().all()
+
+
+async def get_user_achievements(session: AsyncSession, user_id: int) -> list[UserAchievement]:
+    """
+    Возвращает список достижений пользователя.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user_id: Идентификатор пользователя.
+    :return: Список объектов UserAchievement.
+    """
+    result = await session.execute(
+        select(UserAchievement)
+        .where(UserAchievement.user_id == user_id)
+        .options(selectinload(UserAchievement.achievement))
+    )
     return result.scalars().all()

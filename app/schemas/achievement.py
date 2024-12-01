@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.models.achievement import AchievementType  # Импортируем Enum из модели
@@ -36,3 +37,35 @@ class AchievementUpdate(BaseModel):
     condition: Optional[str] = Field(None, description="Обновлённое условие получения достижения", example="Обновлённое условие")
     bonus: Optional[str] = Field(None, description="Обновлённый бонус достижения", example="300 очков")
     visual: Optional[str] = Field(None, description="Обновлённый путь к изображению достижения", example="/images/achievement3.png")
+
+
+class UserAchievementRead(BaseModel):
+    """
+    Модель данных о достижении пользователя с текущим прогрессом, статусом и метаданными.
+    """
+    achievement: AchievementRead = Field(
+        ...,
+        title="Данные достижения",
+        description="Полная информация о достижении, включая название, описание, бонус и другие данные."
+    )
+    progress: int = Field(
+        ...,
+        title="Текущий прогресс",
+        description="Количество выполненных шагов или накопленных значений для достижения цели.",
+        example=75
+    )
+    is_completed: bool = Field(
+        ...,
+        title="Статус выполнения",
+        description="Флаг, указывающий, завершено ли достижение.",
+        example=True
+    )
+    last_updated: datetime = Field(
+        ...,
+        title="Последнее обновление",
+        description="Дата и время последнего обновления прогресса достижения.",
+        example="2024-12-01T12:00:00+00:00"
+    )
+
+    class Config:
+        from_attributes = True

@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Boolean, DateTime, Enum, Integer, String, ForeignKey
+from sqlalchemy import Boolean, DateTime, Enum, Integer, String, ForeignKey, BigInteger
 from app.core.database import Base
 from sqlalchemy.dialects.postgresql import JSON
 import enum
@@ -70,8 +70,8 @@ class User(Base):
     role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), default=UserRoles.user)  # Роль пользователя
     current_collective_type: Mapped[str] = mapped_column(String, nullable=True)
 
-    rice: Mapped[int] = mapped_column(Integer, default=0)  # Количество собранного риса
-    social_rating: Mapped[int] = mapped_column(Integer, default=0)  # Рейтинг пользователя
+    rice: Mapped[int] = mapped_column(BigInteger, default=0)  # Количество собранного риса (BigInt)
+    social_rating: Mapped[int] = mapped_column(BigInteger, default=0)  # Рейтинг пользователя (BigInt)
     clicks: Mapped[int] = mapped_column(Integer, default=0)  # Количество кликов
     invited_users: Mapped[int] = mapped_column(Integer, default=0)  # Приглашенные пользователи
     achievements_count: Mapped[int] = mapped_column(Integer, default=0)  # Количество достижений
@@ -83,9 +83,6 @@ class User(Base):
     autocollect_duration_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Длительность автосбора (в минутах)
     rice_bonus: Mapped[int] = mapped_column(Integer, default=0)  #  Бонус к ручному сбору риса (%)
     invited_users_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к приглашенным пользователям (множитель)
-
-    # Новое поле для хранения всех бонусов
-    # cumulative_bonuses: Mapped[dict] = mapped_column(JSON, default=dict)  # Хранение всех накопленных бонусов в формате JSON
 
     # Привязка к коллективу
     collective_id: Mapped[int] = mapped_column(ForeignKey("collectives.id"), nullable=True)

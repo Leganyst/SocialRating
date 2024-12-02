@@ -6,6 +6,8 @@ with open("load_data/bonuses.json", "r", encoding="utf-8") as file:
     bonuses = json.load(file)
 
 url = "http://127.0.0.1:8000/bonuses/"  # Замените на ваш реальный URL
+# url = "https://rating.radmate.ru/bonuses/"  # Замените на ваш реальный URL
+
 
 for bonus in bonuses:
     response = requests.post(url, json=bonus)

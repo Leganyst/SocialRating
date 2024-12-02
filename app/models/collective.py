@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Enum
+from sqlalchemy import BigInteger, Integer, String, Enum
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import Base
 import enum
@@ -50,7 +50,7 @@ class Collective(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Название совхоза
-    social_rating: Mapped[int] = mapped_column(Integer, default=0)  # Общий рейтинг (сумма рейтингов участников)
+    social_rating: Mapped[int] = mapped_column(BigInteger, default=0)  # Общий рейтинг (сумма рейтингов участников)
     type: Mapped[CollectiveType] = mapped_column(Enum(CollectiveType), nullable=False, default=CollectiveType.INITIAL)  # Тип совхоза
     group_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Идентификатор группы VK (обязательный)
 

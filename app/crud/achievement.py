@@ -38,14 +38,19 @@ async def get_achievement(session: AsyncSession, achievement_id: int) -> Optiona
             Achievement.name,
             Achievement.description,
             Achievement.condition,
-            Achievement.bonus,
             Achievement.visual,
             Achievement.is_active,
-            Achievement.type
+            Achievement.type,
+            Achievement.social_rating_bonus,
+            Achievement.rice_production_bonus,
+            Achievement.autocollect_duration_bonus
         ))
         .where(Achievement.id == achievement_id)
     )
-    return result.scalar_one_or_none()
+    achievement = result.scalar_one_or_none()
+    if achievement:
+        return AchievementRead.model_validate(achievement)
+    return None
 
 
 async def update_achievement(session: AsyncSession, achievement_id: int, updates: AchievementUpdate) -> Optional[AchievementRead]:
@@ -87,7 +92,6 @@ async def delete_achievement(session: AsyncSession, achievement_id: int) -> bool
     await session.delete(achievement)
     await session.commit()
     return True
-
 
 
 async def get_user_achievement(session: AsyncSession, user_id: int, achievement_id: int) -> Optional[UserAchievement]:

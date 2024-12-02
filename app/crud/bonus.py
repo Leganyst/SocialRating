@@ -4,6 +4,7 @@ from app.models.bonus import PurchasableBonus, UserBonus
 from app.models.user import User
 from app.schemas.bonus import BonusCreate, BonusRead, BonusUpdate
 from typing import Optional, List
+from app.core.logger import logger
 
 
 async def create_purchasable_bonus(session: AsyncSession, bonus_data: BonusCreate) -> BonusRead:
@@ -14,11 +15,26 @@ async def create_purchasable_bonus(session: AsyncSession, bonus_data: BonusCreat
     :param bonus_data: Данные для создания бонуса.
     :return: Сериализованный объект нового бонуса.
     """
-    new_bonus = PurchasableBonus(**bonus_data.model_dump())
-    session.add(new_bonus)
-    await session.commit()
-    await session.refresh(new_bonus)
-    return BonusRead.model_validate(new_bonus)
+    # Создание объекта бонуса на основе данных из схемы
+    new_bonus = PurchasableBonus(
+        name=bonus_data.name,
+        description=bonus_data.description,
+        base_cost=bonus_data.base_cost,
+        cost_modifier=bonus_data.cost_modifier,
+        max_level=bonus_data.max_level,
+        effect=bonus_data.effect,
+        image=bonus_data.image,
+        autocollect_rice_bonus=bonus_data.autocollect_rice_bonus,
+        autocollect_duration_bonus=bonus_data.autocollect_duration_bonus,
+        rice_bonus=bonus_data.rice_bonus,
+        invited_users_bonus=bonus_data.invited_users_bonus
+    )
+
+    session.add(new_bonus)  # Добавляем объект в сессию
+    await session.commit()  # Фиксируем изменения
+    await session.refresh(new_bonus)  # Обновляем объект, чтобы получить его актуальное состояние из базы
+
+    return BonusRead.model_validate(new_bonus)  # Возвращаем сериализованный объект
 
 
 async def get_purchasable_bonus(session: AsyncSession, bonus_id: int) -> Optional[BonusRead]:
@@ -130,3 +146,12 @@ async def get_all_bonuses(session: AsyncSession) -> List[BonusRead]:
     """
     result = await session.execute(select(PurchasableBonus))
     return [BonusRead.model_validate(bonus) for bonus in result.scalars().all()]
+
+
+async def get_user_bonus(session: AsyncSession, user_id: int, bonus_id: int) -> Optional[UserBonus]:
+    user_bonus = await session.execute(
+        select(UserBonus).where(UserBonus.user_id == user_id, UserBonus.bonus_id == bonus_id)
+    )
+    user_bonus = user_bonus.scalar_one_or_none()
+    logger.info(f"Статус бонуса: {'Уже куплен' if user_bonus else 'Ещё не куплен'}.")
+    return user_bonus

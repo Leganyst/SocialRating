@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, Enum, DateTime
+from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, Enum, DateTime, Float
 from app.core.database import Base
 from datetime import datetime, timezone
-
 import enum
 
 class AchievementType(enum.Enum):
@@ -17,10 +16,14 @@ class Achievement(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)  # Название достижения
     description: Mapped[str] = mapped_column(Text, nullable=False)  # Описание достижения
     condition: Mapped[str] = mapped_column(Text, nullable=False)  # Условие получения
-    bonus: Mapped[str] = mapped_column(String, nullable=False)  # Получаемый бонус
     visual: Mapped[str] = mapped_column(String, nullable=True)  # Визуализация
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)  # Активно ли достижение
     type: Mapped[AchievementType] = mapped_column(Enum(AchievementType), nullable=False)  # Тип достижения
+
+    # Новые столбцы для бонусов
+    social_rating_bonus: Mapped[int] = mapped_column(Integer, default=0)  # Бонус к социальному рейтингу
+    rice_production_bonus: Mapped[float] = mapped_column(Float, default=0.0)  # Процентный бонус к добыче риса
+    autocollect_duration_bonus: Mapped[float] = mapped_column(Float, default=0.0)  # Процентный бонус к времени автосбора
 
     user_achievements: Mapped[list["UserAchievement"]] = relationship(
         "UserAchievement", back_populates="achievement"

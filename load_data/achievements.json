@@ -3,120 +3,165 @@
     "name": "Гайджин",
     "description": "Вы начать свой путь в Партия",
     "condition": "Запустить приложение",
-    "bonus": "10 соц. рейтинг",
+    "social_rating_bonus": 10,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Тигр 'Тан'",
     "description": "Экономика растёт, как тигр",
     "condition": "Занять первое место в рейтинге игроков",
-    "bonus": "5000 соц. рейтинг",
+    "social_rating_bonus": 5000,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Великий рисовый скачок",
     "description": "Ты превзошёл все нормы Партия",
     "condition": "Собрать 50,000 единиц риса",
-    "bonus": "20% к добыче риса",
+    "social_rating_bonus": 0,
+    "rice_production_bonus": 20.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Светлый путь к 996",
     "description": "Работать как настоящий партийный герой",
     "condition": "Заходить в приложение каждый день на протяжении 6 дней",
-    "bonus": "15% к времени автосбора",
+    "social_rating_bonus": 0,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 15.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Шёлковый путь 2.0",
     "description": "Открываешь новые горизонты для рис",
     "condition": "Собрать 200,000 единиц риса",
-    "bonus": "1000 соц. рейтинг",
+    "social_rating_bonus": 1000,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Дрон от Икара",
     "description": "Летай высоко, но не сгорей",
     "condition": "Собрать 50,000 единиц риса с помощью автосбора",
-    "bonus": "20% к добыче риса",
+    "social_rating_bonus": 0,
+    "rice_production_bonus": 20.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Культурная рЕволюция",
     "description": "Всё меняется — адаптируйся или проиграй",
     "condition": "Вступить в Совхоз",
-    "bonus": "100 соц. рейтинг",
+    "social_rating_bonus": 100,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Новый Шэньчжэнь",
     "description": "Будущее — в твоих руках!",
     "condition": "Построить Нефритовый Совхоз",
-    "bonus": "50000 соц. рейтинг",
+    "social_rating_bonus": 50000,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Пекинское время",
     "description": "Время работает на тебя (и на Партия)",
     "condition": "Заходить в приложение 10 дней подряд",
-    "bonus": "500 соц. рейтинг",
+    "social_rating_bonus": 500,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Маленькие красные точки",
     "description": "Впиши своё имя в историю",
     "condition": "Достигнуть 1,000,000 соц. рейтинга",
-    "bonus": "500000 соц. рейтинг",
+    "social_rating_bonus": 500000,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Великий дракон экономики",
     "description": "Ты правишь рынками Партия",
     "condition": "Добавить 1,000,000 Рис",
-    "bonus": "30% к добыче риса",
+    "social_rating_bonus": 0,
+    "rice_production_bonus": 30.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Эпоха Жёлтого Императора",
     "description": "Возродил империю в цифровую эпоху",
     "condition": "Собрать 10,000,000 единиц риса",
-    "bonus": "40% к добыче риса",
+    "social_rating_bonus": 0,
+    "rice_production_bonus": 40.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Искать воробьей",
     "description": "Ты, воробей, и Партия на примете",
     "condition": "Собрать 1000 единиц риса",
-    "bonus": "50 соц. рейтинг",
+    "social_rating_bonus": 50,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Панда на страже",
     "description": "Панда гордится за вашу работу",
     "condition": "Собрать 10000 единиц риса",
-    "bonus": "100 соц. рейтинг",
+    "social_rating_bonus": 100,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   },
   {
     "name": "Партия всё видит",
     "description": "Как вы смеете ругать Партия",
     "condition": "Использовать кнопку 'Ругать Партия!'",
-    "bonus": "10 соц. рейтинг",
+    "social_rating_bonus": 10,
+    "rice_production_bonus": 0.0,
+    "autocollect_duration_bonus": 0.0,
     "visual": "",
-    "type": "Уникальное"
+    "type": "Уникальное",
+    "is_active": true
   }
 ]

@@ -34,6 +34,18 @@ async def get_user(session: AsyncSession, user_id: int) -> Optional[UserRead]:
     user = result.scalar_one_or_none()
     return UserRead.model_validate(user) if user else None
 
+async def get_user_raw(session: AsyncSession, user_id: int) -> Optional[UserRead]:
+    """
+    Асинхронное получение пользователя по ID.
+
+    :param session: Асинхронная сессия SQLAlchemy.
+    :param user_id: ID пользователя.
+    :return: Сериализованный объект пользователя или None.
+    """
+    result = await session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    return user if user else None
+
 
 async def update_user(session: AsyncSession, user_id: int, updates: UserUpdate) -> Optional[UserRead]:
     """

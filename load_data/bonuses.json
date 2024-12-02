@@ -6,7 +6,11 @@
     "cost_modifier": 2,
     "max_level": 0,
     "effect": "При первой покупке разрешает автосбор: 1 час, 200 рис в час. Дальше — Автосбор 10 минут",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 200,
+    "autocollect_duration_bonus": 10,
+    "rice_bonus": 0,
+    "invited_users_bonus": 0
   },
   {
     "name": "Телескоп для смартфона",
@@ -15,7 +19,11 @@
     "cost_modifier": 1.5,
     "max_level": 0,
     "effect": "2% к сбору Рис",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 0,
+    "autocollect_duration_bonus": 0,
+    "rice_bonus": 2,
+    "invited_users_bonus": 0
   },
   {
     "name": "Массажёр для лоб",
@@ -24,7 +32,11 @@
     "cost_modifier": 1.5,
     "max_level": 0,
     "effect": "2% к времени автосбора, 2% к объёму автосбора",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 2,
+    "autocollect_duration_bonus": 2,
+    "rice_bonus": 0,
+    "invited_users_bonus": 0
   },
   {
     "name": "Отпуск остров Хайнань",
@@ -33,7 +45,11 @@
     "cost_modifier": 1.4,
     "max_level": 0,
     "effect": "5% к сбору рис",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 0,
+    "autocollect_duration_bonus": 0,
+    "rice_bonus": 5,
+    "invited_users_bonus": 0
   },
   {
     "name": "Кошко-жена",
@@ -42,7 +58,11 @@
     "cost_modifier": 1.5,
     "max_level": 0,
     "effect": "Автосбор 500 рис в час, 10% к сбору рис",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 500,
+    "autocollect_duration_bonus": 0,
+    "rice_bonus": 10,
+    "invited_users_bonus": 0
   },
   {
     "name": "Кепка с Вентилятор",
@@ -51,7 +71,11 @@
     "cost_modifier": 1.5,
     "max_level": 0,
     "effect": "10% к времени автосбора, 10% к объёму автосбора",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 10,
+    "autocollect_duration_bonus": 10,
+    "rice_bonus": 0,
+    "invited_users_bonus": 0
   },
   {
     "name": "Зарядка на солнечной энергии",
@@ -60,6 +84,10 @@
     "cost_modifier": 1.4,
     "max_level": 0,
     "effect": "x2 к бонусу за привлечение друга",
-    "image": ""
+    "image": "",
+    "autocollect_rice_bonus": 0,
+    "autocollect_duration_bonus": 0,
+    "rice_bonus": 0,
+    "invited_users_bonus": 2
   }
 ]

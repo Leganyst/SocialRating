@@ -8,7 +8,6 @@ import enum
 class CollectiveType(enum.Enum):
     INITIAL = "INITIAL"  # Начальный совхоз
     MEDIUM = "MEDIUM"    # Средний совхоз
-    LARGE = "LARGE"      # Крупный совхоз
     GOLD = "GOLD"        # Золотой совхоз
     DIAMOND = "DIAMOND"  # Алмазный совхоз
     JADE = "JADE"        # Нефритовый совхоз
@@ -20,7 +19,6 @@ class CollectiveType(enum.Enum):
         mapping = {
             "INITIAL": "Начальный совхоз",
             "MEDIUM": "Средний совхоз",
-            "LARGE": "Крупный совхоз",
             "GOLD": "Золотой совхоз",
             "DIAMOND": "Алмазный совхоз",
             "JADE": "Нефритовый совхоз",
@@ -38,10 +36,9 @@ def collective_factory(collective_type: CollectiveType) -> dict:
     bonuses = {
         CollectiveType.INITIAL: {"rice_boost": 0.05, "autocollect_bonus": 0, "required_rating": 0},
         CollectiveType.MEDIUM: {"rice_boost": 0.1, "autocollect_bonus": 0, "required_rating": 100_000},
-        CollectiveType.LARGE: {"rice_boost": 0.2, "autocollect_bonus": 0.05, "required_rating": 1_000_000},
-        CollectiveType.GOLD: {"rice_boost": 0.25, "autocollect_bonus": 0.1, "required_rating": 10_000_000},
-        CollectiveType.DIAMOND: {"rice_boost": 0.3, "autocollect_bonus": 0.15, "required_rating": 100_000_000},
-        CollectiveType.JADE: {"rice_boost": 0.4, "autocollect_bonus": 0.2, "required_rating": 1_000_000_000},
+        CollectiveType.GOLD: {"rice_boost": 0.25, "autocollect_bonus": 0.1, "required_rating": 1_000_000},
+        CollectiveType.DIAMOND: {"rice_boost": 0.3, "autocollect_bonus": 0.15, "required_rating": 10_000_000},
+        CollectiveType.JADE: {"rice_boost": 0.4, "autocollect_bonus": 0.2, "required_rating": 100_000_000},
     }
     return bonuses.get(collective_type, {})
 
